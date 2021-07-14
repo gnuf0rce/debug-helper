@@ -78,7 +78,7 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
                     Bot.instances.forEach { bot ->
                         appendLine("--- ${bot.nick} ${bot.id} ---")
                         bot.groups.forEach { group ->
-                            appendLine("$group -> [${group.members.size}] ${group.name}")
+                            appendLine("$group -> <${group.name}>[${group.members.size}] ")
                         }
                     }
                 })
