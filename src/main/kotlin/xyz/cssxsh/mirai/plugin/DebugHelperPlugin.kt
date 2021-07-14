@@ -5,11 +5,8 @@ import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import xyz.cssxsh.mirai.plugin.data.*
 
 object DebugHelperPlugin : KotlinPlugin(
-    JvmPluginDescription(
-        id = "xyz.cssxsh.mirai.plugin.debug-helper",
-        name = "debug-helper",
-        version = "0.1.0-dev-1",
-    ) {
+    JvmPluginDescription(id = "xyz.cssxsh.mirai.plugin.debug-helper", version = "1.0.0") {
+        name("debug-helper")
         author("cssxsh")
     }
 ) {
