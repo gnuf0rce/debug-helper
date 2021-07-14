@@ -30,9 +30,7 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
         @Handler
         suspend fun CommandSender.handle(message: String) {
             runCatching {
-                Bot.instances.flatMap(Bot::groups).sendMessage("机器人关闭调试一下 $message")
-            }.onSuccess {
-                sendMessage("'${message}'发送成功")
+                Bot.instances.flatMap(Bot::groups).sendMessage(message)
             }.onFailure {
                 sendMessage("'${message}'发送失败, $it")
             }
@@ -47,8 +45,6 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
                 var msg: Message = message.toPlainText()
                 if (user != null) msg += At(user)
                 contact.sendMessage(msg)
-            }.onSuccess {
-                sendMessage("'${message}'发送成功")
             }.onFailure {
                 sendMessage("'${message}'发送失败, $it")
             }
