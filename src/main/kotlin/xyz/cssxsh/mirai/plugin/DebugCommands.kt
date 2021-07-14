@@ -60,9 +60,7 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle() {
             runCatching {
-                fromEvent.message.firstIsInstance<QuoteReply>()
-            }.mapCatching {
-                it.recallSource()
+                fromEvent.message.firstIsInstance<QuoteReply>().recallSource()
             }.onSuccess {
                 sendMessage("...撤回成功")
             }.onFailure {
