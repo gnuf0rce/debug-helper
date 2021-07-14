@@ -163,6 +163,16 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
             }
         }
     }
+
+    @Suppress("unused")
+    object GarbageCommand : SimpleCommand(owner = owner, "gc", description = "垃圾回收") {
+
+        @Handler
+        suspend fun CommandSender.handle() {
+            System.gc()
+            sendMessage("GC完毕")
+        }
+    }
 }
 
 
