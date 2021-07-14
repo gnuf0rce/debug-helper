@@ -8,7 +8,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
-import okio.ByteString.Companion.decodeHex
+import xyz.cssxsh.mirai.plugin.data.*
 
 @ConsoleExperimentalApi
 object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
@@ -104,54 +104,47 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
     }
 
     @Suppress("unused")
-    object GarbageCommand : SimpleCommand(owner = owner, "gc", description = "垃圾回收") {
+    object FriendRequestCommand : SimpleCommand(owner = owner, "friend-request", description = "接受好友") {
+
+        private var friend by DebugRequestEventData::friend
+
         @Handler
-        suspend fun CommandSender.handle() {
-            System.gc()
-            sendMessage("GC完毕")
-        }
-    }
-
-    private val MarketFaceImplKClass by lazy {
-        Class.forName("net.mamoe.mirai.internal.message.MarketFaceImpl").kotlin
-    }
-
-    private val MarketFaceBodyKClass by lazy {
-        Class.forName("net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody").kotlin.nestedClasses.first {
-            it.simpleName == "MarketFace"
-        }
-    }
-
-    private fun MarketFace(id: Int, key: String, md5: String): MarketFace {
-        val body = MarketFaceBodyKClass.constructors.first { it.parameters.size == 13 }.run {
-            callBy(parameters.associateWith { parameter ->
-                when (parameter.name) {
-                    "faceId" -> md5.decodeHex().toByteArray()
-                    "faceInfo" -> 1
-                    "faceName" -> "[表情测试]".toByteArray()
-                    "imageHeight" -> 200
-                    "imageWidth" -> 200
-                    "itemType" -> 6
-                    "key" -> key.toByteArray()
-                    "mediaType" -> 0
-                    "mobileParam" -> byteArrayOf()
-                    "param" -> byteArrayOf()
-                    "pbReserve" -> byteArrayOf()
-                    "subType" -> 3
-                    "tabId" -> id
-                    else -> throw IllegalArgumentException()
+        suspend fun CommandSender.handle(id: Long, accept: Boolean, black: Boolean) {
+            runCatching {
+                requireNotNull(friend.find { it.eventId == id }) { "找不到事件" }.let { event ->
+                    if (accept) {
+                        event.accept()
+                    } else {
+                        event.reject(black)
+                    }
                 }
-            })
+            }.onSuccess {
+                friend = friend.dropWhile { it.eventId == id }
+                sendMessage("处理成功")
+            }.onFailure {
+                sendMessage("出现错误 $it")
+            }
         }
-        return MarketFaceImplKClass.constructors.first { it.parameters.size == 1 }.call(body) as MarketFace
     }
 
     @Suppress("unused")
-    object MarketFaceCommand : SimpleCommand(owner = owner, "face", description = "发送一个表情") {
+    object GroupRequestCommand : SimpleCommand(owner = owner, "group-request", description = "接受群") {
+
+        private var group by DebugRequestEventData::group
+
         @Handler
-        suspend fun CommandSenderOnMessage<*>.handle(id: Int, key: String, md5: String) {
+        suspend fun CommandSender.handle(id: Long, accept: Boolean) {
             runCatching {
-                sendMessage(MarketFace(id, key, md5))
+                requireNotNull(group.find { it.eventId == id }) { "找不到事件" }.let { event ->
+                    if (accept) {
+                        event.accept()
+                    } else {
+                        event.ignore()
+                    }
+                }
+            }.onSuccess {
+                group = group.dropWhile { it.eventId == id }
+                sendMessage("处理成功")
             }.onFailure {
                 sendMessage("出现错误 $it")
             }
