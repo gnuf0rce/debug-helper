@@ -89,7 +89,7 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
     }
 
     @Suppress("unused")
-    object FriendCommand : SimpleCommand(owner = owner, "friend", description = "查看当前的群组") {
+    object FriendCommand : SimpleCommand(owner = owner, "friend", description = "查看当前的好友") {
         @Handler
         suspend fun CommandSender.handle() {
             runCatching {
@@ -97,7 +97,7 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
                     Bot.instances.forEach { bot ->
                         appendLine("--- ${bot.nick} ${bot.id} ---")
                         bot.friends.forEach { friend ->
-                            appendLine("$friend -> ${friend.nick}")
+                            appendLine("$friend -> <${friend.nick}>")
                         }
                     }
                 })
