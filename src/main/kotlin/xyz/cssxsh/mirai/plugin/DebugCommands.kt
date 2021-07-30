@@ -106,12 +106,13 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
     @Suppress("unused")
     object FriendRequestCommand : SimpleCommand(owner = owner, "friend-request", description = "接受好友") {
 
-        private var friend by DebugRequestEventData::friend
+        private val friend by DebugRequestEventData::friend
 
         @Handler
         suspend fun CommandSender.handle(id: Long, accept: Boolean, black: Boolean) {
             runCatching {
-                requireNotNull(friend.find { it.eventId == id }) { "找不到事件" }.let { event ->
+                requireNotNull(friend.find { it.eventId == id }) { "找不到事件" }.also {
+                    val event = it.toEvent()
                     if (accept) {
                         event.accept()
                     } else {
@@ -119,7 +120,7 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
                     }
                 }
             }.onSuccess {
-                friend = friend.dropWhile { it.eventId == id }
+                friend.removeIf { it.eventId == id }
                 sendMessage("处理成功")
             }.onFailure {
                 sendMessage("出现错误 $it")
@@ -130,12 +131,13 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
     @Suppress("unused")
     object GroupRequestCommand : SimpleCommand(owner = owner, "group-request", description = "接受群") {
 
-        private var group by DebugRequestEventData::group
+        private val group by DebugRequestEventData::group
 
         @Handler
         suspend fun CommandSender.handle(id: Long, accept: Boolean) {
             runCatching {
-                requireNotNull(group.find { it.eventId == id }) { "找不到事件" }.let { event ->
+                requireNotNull(group.find { it.eventId == id }) { "找不到事件" }.also {
+                    val event = it.toEvent()
                     if (accept) {
                         event.accept()
                     } else {
@@ -143,7 +145,7 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
                     }
                 }
             }.onSuccess {
-                group = group.dropWhile { it.eventId == id }
+                group.removeIf { it.eventId == id }
                 sendMessage("处理成功")
             }.onFailure {
                 sendMessage("出现错误 $it")

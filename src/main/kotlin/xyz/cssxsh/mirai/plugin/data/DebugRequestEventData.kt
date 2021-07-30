@@ -2,65 +2,72 @@
 
 package xyz.cssxsh.mirai.plugin.data
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.data.AutoSavePluginData
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
-import net.mamoe.mirai.utils.MiraiInternalApi
-import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KProperty
 
-@MiraiInternalApi
 object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
 
-    private var friend0 by value(listOf<String>())
+    val friend by value(mutableListOf<FriendRequestEventData>())
 
-    private var group0 by value(listOf<String>())
-
-    var friend by object : ReadWriteProperty<Any?, List<NewFriendRequestEvent>> {
-        override fun getValue(thisRef: Any?, property: KProperty<*>): List<NewFriendRequestEvent> {
-            return friend0.map {
-                it.split("|").let { (qq, eventId, fromId, fromNick) ->
-                    NewFriendRequestEvent(
-                        bot = Bot.getInstance(qq.toLong()),
-                        eventId = eventId.toLong(),
-                        message = "",
-                        fromId = fromId.toLong(),
-                        fromGroupId = 0,
-                        fromNick = fromNick
-                    )
-                }
-            }
-        }
-
-        override fun setValue(thisRef: Any?, property: KProperty<*>, value: List<NewFriendRequestEvent>) {
-            friend0 = value.map {
-                "${it.bot.id}|${it.eventId}|${it.fromId}|${it.fromNick}"
-            }
-        }
-    }
-
-    var group by object : ReadWriteProperty<Any?, List<BotInvitedJoinGroupRequestEvent>> {
-        override fun getValue(thisRef: Any?, property: KProperty<*>): List<BotInvitedJoinGroupRequestEvent> {
-            return group0.map {
-                it.split("|").let { (qq, eventId, invitorId, groupId) ->
-                    BotInvitedJoinGroupRequestEvent(
-                        bot = Bot.getInstance(qq.toLong()),
-                        eventId = eventId.toLong(),
-                        invitorId = invitorId.toLong(),
-                        groupId = groupId.toLong(),
-                        invitorNick = "",
-                        groupName = "",
-                    )
-                }
-            }
-        }
-
-        override fun setValue(thisRef: Any?, property: KProperty<*>, value: List<BotInvitedJoinGroupRequestEvent>) {
-            group0 = value.map {
-                "${it.bot.id}|${it.eventId}|${it.invitorId}|${it.groupId}"
-            }
-        }
-    }
+    val group by value(mutableListOf<GroupRequestEventData>())
 }
+
+@Serializable
+data class FriendRequestEventData(
+    val bot: Long,
+    val eventId: Long,
+    val message: String,
+    val fromId: Long,
+    val fromGroupId: Long,
+    val fromNick: String
+)
+
+fun NewFriendRequestEvent.toData() = FriendRequestEventData(
+    bot.id,
+    eventId,
+    message,
+    fromId,
+    fromGroupId,
+    fromNick
+)
+
+fun FriendRequestEventData.toEvent() = NewFriendRequestEvent(
+    Bot.getInstance(bot),
+    eventId,
+    message,
+    fromId,
+    fromGroupId,
+    fromNick
+)
+
+@Serializable
+data class GroupRequestEventData(
+    val bot: Long,
+    val eventId: Long,
+    val invitorId: Long,
+    val groupId: Long,
+    val groupName: String,
+    val invitorNick: String
+)
+
+fun BotInvitedJoinGroupRequestEvent.toData() = GroupRequestEventData(
+    bot.id,
+    eventId,
+    invitorId,
+    groupId,
+    groupName,
+    invitorNick
+)
+
+fun GroupRequestEventData.toEvent() = BotInvitedJoinGroupRequestEvent(
+    Bot.getInstance(bot),
+    eventId,
+    invitorId,
+    groupId,
+    groupName,
+    invitorNick
+)
