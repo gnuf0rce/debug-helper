@@ -71,15 +71,15 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
     @Suppress("unused")
-    object GroupCommand : SimpleCommand(owner = owner, "group", description = "查看当前的群组") {
+    object FriendCommand : SimpleCommand(owner = owner, "friend", description = "查看当前的好友") {
         @Handler
         suspend fun CommandSender.handle() {
             runCatching {
                 sendMessage(buildMessageChain {
                     Bot.instances.forEach { bot ->
                         appendLine("--- ${bot.nick} ${bot.id} ---")
-                        bot.groups.forEach { group ->
-                            appendLine("$group -> <${group.name}>[${group.members.size}] ")
+                        bot.friends.forEach { friend ->
+                            appendLine("$friend -> <${friend.nick}>")
                         }
                     }
                 })
@@ -90,15 +90,15 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
     @Suppress("unused")
-    object FriendCommand : SimpleCommand(owner = owner, "friend", description = "查看当前的好友") {
+    object GroupCommand : SimpleCommand(owner = owner, "group", description = "查看当前的群组") {
         @Handler
         suspend fun CommandSender.handle() {
             runCatching {
                 sendMessage(buildMessageChain {
                     Bot.instances.forEach { bot ->
                         appendLine("--- ${bot.nick} ${bot.id} ---")
-                        bot.friends.forEach { friend ->
-                            appendLine("$friend -> <${friend.nick}>")
+                        bot.groups.forEach { group ->
+                            appendLine("$group -> <${group.name}>[${group.members.size}] ")
                         }
                     }
                 })
