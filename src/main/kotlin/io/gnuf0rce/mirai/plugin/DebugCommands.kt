@@ -22,7 +22,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     private val logger get() = DebugHelperPlugin.logger
 
-    private suspend fun Collection<Contact>.sendMessage(message: String) = map {
+    private suspend fun Collection<Contact>.sendMessage(message: Message) = map {
         runCatching {
             it.sendMessage(message)
         }.onFailure {
@@ -33,11 +33,12 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     @Suppress("unused")
     object SendAllCommand : SimpleCommand(owner = owner, "send-groups", description = "预告") {
         @Handler
-        suspend fun CommandSender.handle(message: String) {
+        suspend fun CommandSender.handle(text: String, atAll: Boolean = false) {
             runCatching {
+                val message = if (atAll) AtAll + text else text.toPlainText()
                 Bot.instances.flatMap(Bot::groups).sendMessage(message)
             }.onFailure {
-                sendMessage("'${message}'发送失败, $it")
+                sendMessage("'${text}'发送失败, $it")
             }
         }
     }
@@ -45,13 +46,12 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     @Suppress("unused")
     object SendCommand : SimpleCommand(owner = owner, "send", description = "发送消息") {
         @Handler
-        suspend fun CommandSender.handle(contact: Contact, message: String, user: User? = null) {
+        suspend fun CommandSender.handle(contact: Contact, text: String, at: User? = null) {
             runCatching {
-                var msg: Message = message.toPlainText()
-                if (user != null) msg += At(user)
-                contact.sendMessage(msg)
+                val message: Message = if (at != null) At(at) + text else text.toPlainText()
+                contact.sendMessage(message)
             }.onFailure {
-                sendMessage("'${message}'发送失败, $it")
+                sendMessage("'${text}'发送失败, $it")
             }
         }
     }
