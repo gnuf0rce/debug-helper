@@ -1,8 +1,8 @@
-package xyz.cssxsh.mirai.plugin
+package io.gnuf0rce.mirai.plugin
 
+import io.gnuf0rce.mirai.plugin.data.*
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
-import xyz.cssxsh.mirai.plugin.data.*
 
 object DebugHelperPlugin : KotlinPlugin(
     JvmPluginDescription(id = "xyz.cssxsh.mirai.plugin.debug-helper", version = "1.0.0") {

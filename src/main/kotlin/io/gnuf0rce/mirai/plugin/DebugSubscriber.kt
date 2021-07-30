@@ -1,5 +1,6 @@
-package xyz.cssxsh.mirai.plugin
+package io.gnuf0rce.mirai.plugin
 
+import io.gnuf0rce.mirai.plugin.data.*
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
@@ -19,7 +20,6 @@ import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.*
-import xyz.cssxsh.mirai.plugin.data.*
 
 object DebugSubscriber : CoroutineScope by DebugHelperPlugin.childScope("debug-subscriber") {
 

@@ -1,6 +1,6 @@
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
-package xyz.cssxsh.mirai.plugin.data
+package io.gnuf0rce.mirai.plugin.data
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot

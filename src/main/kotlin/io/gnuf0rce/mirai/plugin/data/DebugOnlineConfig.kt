@@ -1,4 +1,4 @@
-package xyz.cssxsh.mirai.plugin.data
+package io.gnuf0rce.mirai.plugin.data
 
 import net.mamoe.mirai.console.data.ReadOnlyPluginConfig
 import net.mamoe.mirai.console.data.value

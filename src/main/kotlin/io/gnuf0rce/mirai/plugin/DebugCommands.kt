@@ -1,5 +1,6 @@
-package xyz.cssxsh.mirai.plugin
+package io.gnuf0rce.mirai.plugin
 
+import io.gnuf0rce.mirai.plugin.data.*
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.*
@@ -8,7 +9,6 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
-import xyz.cssxsh.mirai.plugin.data.*
 
 @ConsoleExperimentalApi
 object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
