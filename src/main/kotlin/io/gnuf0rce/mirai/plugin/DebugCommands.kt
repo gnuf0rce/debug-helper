@@ -9,9 +9,10 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.*
 
 @ConsoleExperimentalApi
-object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
+object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
 
     private val all by lazy { this::class.nestedClasses.mapNotNull { it.objectInstance as? Command } }
 
@@ -19,9 +20,13 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
 
     private val owner: CommandOwner get() = DebugHelperPlugin
 
+    private val logger get() = DebugHelperPlugin.logger
+
     private suspend fun Collection<Contact>.sendMessage(message: String) = map {
         runCatching {
             it.sendMessage(message)
+        }.onFailure {
+            logger.warning { "发送消息失败 $it" }
         }
     }
 
@@ -103,21 +108,36 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
         }
     }
 
+    private val friend by DebugRequestEventData::friend
+
+    private val group by DebugRequestEventData::group
+
+    @Suppress("unused")
+    object RequestListCommand : SimpleCommand(owner = owner, "request", description = "申请列表") {
+
+        @Handler
+        suspend fun CommandSender.handle() {
+            runCatching {
+                sendMessage(buildMessageChain {
+                    appendLine("Friend")
+                    appendLine(friend.joinToString("\n"))
+                    appendLine("Group")
+                    appendLine(group.joinToString("\n"))
+                })
+            }.onFailure {
+                sendMessage("出现错误 $it")
+            }
+        }
+    }
+
     @Suppress("unused")
     object FriendRequestCommand : SimpleCommand(owner = owner, "friend-request", description = "接受好友") {
 
-        private val friend by DebugRequestEventData::friend
-
         @Handler
-        suspend fun CommandSender.handle(id: Long, accept: Boolean, black: Boolean) {
+        suspend fun CommandSender.handle(id: Long, accept: Boolean, black: Boolean = false) {
             runCatching {
-                requireNotNull(friend.find { it.eventId == id }) { "找不到事件" }.also {
-                    val event = it.toEvent()
-                    if (accept) {
-                        event.accept()
-                    } else {
-                        event.reject(black)
-                    }
+                requireNotNull(friend.find { it.eventId == id }) { "找不到事件" }.toEvent().apply {
+                    if (accept) accept() else reject(black)
                 }
             }.onSuccess {
                 friend.removeIf { it.eventId == id }
@@ -131,18 +151,11 @@ object DebugCommands: CoroutineScope by DebugHelperPlugin.childScope("debug-comm
     @Suppress("unused")
     object GroupRequestCommand : SimpleCommand(owner = owner, "group-request", description = "接受群") {
 
-        private val group by DebugRequestEventData::group
-
         @Handler
         suspend fun CommandSender.handle(id: Long, accept: Boolean) {
             runCatching {
-                requireNotNull(group.find { it.eventId == id }) { "找不到事件" }.also {
-                    val event = it.toEvent()
-                    if (accept) {
-                        event.accept()
-                    } else {
-                        event.ignore()
-                    }
+                requireNotNull(group.find { it.eventId == id }) { "找不到事件" }.toEvent().apply {
+                    if (accept) accept() else ignore()
                 }
             }.onSuccess {
                 group.removeIf { it.eventId == id }
