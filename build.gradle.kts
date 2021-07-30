@@ -24,6 +24,7 @@ kotlin {
         all {
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.console.util.ConsoleExperimentalApi")
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalApi")
+            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalApi")
         }
     }
 }

@@ -14,6 +14,7 @@ object DebugHelperPlugin : KotlinPlugin(
     override fun onEnable() {
         DebugSetting.reload()
         DebugRequestEventData.reload()
+        DebugOnlineConfig.reload()
         DebugCommands.registerAll()
 
         DebugSubscriber.start()

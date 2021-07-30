@@ -5,6 +5,6 @@ import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
 
 object DebugSetting: ReadOnlyPluginConfig("DebugSetting") {
-    @ValueDescription("")
+    @ValueDescription("机器人所有者")
     val owner by value(12345L)
 }
