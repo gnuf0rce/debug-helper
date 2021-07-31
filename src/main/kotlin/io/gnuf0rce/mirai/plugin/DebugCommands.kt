@@ -114,7 +114,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     @Suppress("unused")
     object RequestListCommand : SimpleCommand(owner = owner, "request", description = "申请列表") {
-
         @Handler
         suspend fun CommandSender.handle() {
             runCatching {
@@ -132,7 +131,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     @Suppress("unused")
     object FriendRequestCommand : SimpleCommand(owner = owner, "friend-request", description = "接受好友") {
-
         @Handler
         suspend fun CommandSender.handle(id: Long, accept: Boolean, black: Boolean = false) {
             runCatching {
@@ -150,7 +148,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     @Suppress("unused")
     object GroupRequestCommand : SimpleCommand(owner = owner, "group-request", description = "接受群") {
-
         @Handler
         suspend fun CommandSender.handle(id: Long, accept: Boolean) {
             runCatching {
@@ -159,6 +156,34 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                 }
             }.onSuccess {
                 group.removeIf { it.eventId == id }
+                sendMessage("处理成功")
+            }.onFailure {
+                sendMessage("出现错误 $it")
+            }
+        }
+    }
+
+    @Suppress("unused")
+    object FriendDeleteCommand : SimpleCommand(owner = owner, "friend-delete", description = "删除好友") {
+        @Handler
+        suspend fun CommandSender.handle(friend: Friend) {
+            runCatching {
+                friend.delete()
+            }.onSuccess {
+                sendMessage("处理成功")
+            }.onFailure {
+                sendMessage("出现错误 $it")
+            }
+        }
+    }
+
+    @Suppress("unused")
+    object GroupQuitCommand : SimpleCommand(owner = owner, "group-quit", description = "接受群") {
+        @Handler
+        suspend fun CommandSender.handle(group: Group) {
+            runCatching {
+                group.quit()
+            }.onSuccess {
                 sendMessage("处理成功")
             }.onFailure {
                 sendMessage("出现错误 $it")
