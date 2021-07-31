@@ -9,10 +9,11 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.permission.AbstractPermitteeId
+import net.mamoe.mirai.console.permission.*
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
+import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.*
@@ -58,13 +59,19 @@ object DebugSubscriber : CoroutineScope by DebugHelperPlugin.childScope("debug-s
             val image = uploadImage(resource = avatar)
             sendMessage(message = online(bot = bot, picture = image.queryUrl()))
         }.onSuccess {
-            logger.info { "向${id}发送上线消息成功" }
+            logger.info { "向[${id}]发送上线消息成功" }
         }.onFailure {
-            logger.warning { "向${id}发送上线消息失败 $it" }
+            logger.warning { "向[${id}]发送上线消息失败 $it" }
         }.isSuccess
     }
 
-    private val exclude = DebugHelperPlugin.permissionId("online.exclude")
+    private fun AbstractJvmPlugin.registerPermission(name: String, description: String): Permission {
+        return PermissionService.INSTANCE.register(permissionId(name), description, parentPermission)
+    }
+
+    private val exclude by lazy {
+        DebugHelperPlugin.registerPermission("online.exclude", "不发送上线通知")
+    }
 
     fun start() {
         // 兼容性代码
