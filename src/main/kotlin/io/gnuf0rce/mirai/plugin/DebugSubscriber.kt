@@ -9,17 +9,19 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.permission.*
+import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
+import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
+import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
+import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Contact.Companion.uploadImage
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.BotOnlineEvent
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.globalEventChannel
-import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 
 object DebugSubscriber : CoroutineScope by DebugHelperPlugin.childScope("debug-subscriber") {
 
@@ -30,8 +32,6 @@ object DebugSubscriber : CoroutineScope by DebugHelperPlugin.childScope("debug-s
     private val friend by DebugRequestEventData::friend
 
     private val group by DebugRequestEventData::group
-
-    private val exclude by DebugOnlineConfig::exclude
 
     private fun online(bot: Bot, picture: String = bot.avatarUrl) = buildXmlMessage(1) {
         templateId = -1
@@ -49,21 +49,33 @@ object DebugSubscriber : CoroutineScope by DebugHelperPlugin.childScope("debug-s
         source(name = "QQ Bot 已启动，可以开始执行指令")
     }
 
-    private val avatars = mutableMapOf<Long, ByteArray>()
+    private val avatars = mutableMapOf<Long, ExternalResource>()
 
     private suspend fun Contact.sendOnlineMessage(): Boolean {
         return runCatching {
-            val avatar = avatars.getOrPut(bot.id) { HttpClient(OkHttp).use { it.get(bot.avatarUrl) } }
-            val image = uploadImage(avatar.inputStream())
+            val avatar = avatars.getOrPut(bot.id) {
+                HttpClient(OkHttp).use { it.get<ByteArray>(bot.avatarUrl) }.toExternalResource()
+            }
+            val image = uploadImage(resource = avatar)
             sendMessage(message = online(bot = bot, picture = image.queryUrl()))
         }.onSuccess {
-            logger.info { "向${group}发送上线消息成功" }
+            logger.info { "向[${id}]发送上线消息成功" }
         }.onFailure {
-            logger.warning { "向${group}发送上线消息失败 $it" }
+            logger.warning { "向[${id}]发送上线消息失败 $it" }
         }.isSuccess
     }
 
+    private fun AbstractJvmPlugin.registerPermission(name: String, description: String): Permission {
+        return PermissionService.INSTANCE.register(permissionId(name), description, parentPermission)
+    }
+
+    private val exclude by lazy {
+        DebugHelperPlugin.registerPermission("online.exclude", "不发送上线通知")
+    }
+
     fun start() {
+        // 兼容性代码
+        DebugOnlineConfig.exclude.forEach { AbstractPermitteeId.ExactGroup(it).permit(exclude) }
         globalEventChannel().apply {
             subscribeAlways<NewFriendRequestEvent> {
                 friend += it.toData()
@@ -93,13 +105,12 @@ object DebugSubscriber : CoroutineScope by DebugHelperPlugin.childScope("debug-s
             }
             //
             subscribeAlways<BotOnlineEvent> {
-                delay(30 * 1000L)
-                bot.groups.filterNot { it.id in exclude }.forEach { group ->
-                    isActive && group.sendOnlineMessage()
+                bot.groups.filterNot { exclude.testPermission(it.permitteeId) }.forEach { group ->
+                    isActive && group.run {
+                        delay(DebugOnlineConfig.duration * 1000L)
+                        sendOnlineMessage()
+                    }
                 }
-            }
-            subscribeGroupMessages {
-                atBot { group.sendOnlineMessage() }
             }
         }
     }

@@ -6,6 +6,9 @@
 [![Downloads](https://img.shields.io/github/downloads/gnuf0rce/debug-helper/total)](https://shields.io/category/downloads)
 [![MiraiForum](https://img.shields.io/badge/post-on%20MiraiForum-yellow)](https://mirai.mamoe.net/topic/452)
 
+机器人会在触发上线事件后向群聊发送上线卡片消息  
+有好友申请和加群申请时，会记录事件信息，并联系机器人所有者  
+
 ## 指令
 
 注意: 使用前请确保可以 [在聊天环境执行指令](https://github.com/project-mirai/chat-command)   
@@ -25,15 +28,26 @@
 | `/<request>`                      | 查看申请列表         |
 | `/<friend-request> [id] [black]?` | 接受好友申请         |
 | `/<group-request> [id]`           | 接受群申请           |
+| `/<friend-delete> [friend]`       | 删除好友             |
+| `/<group-quit> [group]`           | 退出群               |
 | `/<gc>`                           | 主动触发 JVM GC      |
 
-contact 和 at 这两个参数可以是 数字号码 也可以是 @XXX
+id 是事件id，可以通过 `/request` 查看  
+contact 和 at 这两个参数可以是 数字号码 也可以是 @XXX  
+
+## 权限
+
+### Online Exclude
+
+ID: `xyz.cssxsh.mirai.plugin.debug-helper:online.exclude`  
+作用: 拥有此权限的群，不发送上线通知  
 
 ## 配置
 
 ### DebugOnlineConfig
 
-1. exclude 不开启上线信息的群号
+1. exclude 不开启上线信息的群号 (deprecated 1.0.1 移交权限系统管理)
+2. 逐个发送消息延时，单位秒，默认 10s (since 1.0.1)
 
 ### DebugSetting
 
