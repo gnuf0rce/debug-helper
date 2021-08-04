@@ -1,9 +1,10 @@
 package io.gnuf0rce.mirai.plugin
 
 import io.gnuf0rce.mirai.plugin.data.*
-import net.mamoe.mirai.console.data.PluginConfig
-import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
-import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.console.data.*
+import net.mamoe.mirai.console.plugin.jvm.*
+import net.mamoe.mirai.event.globalEventChannel
+import net.mamoe.mirai.event.registerTo
 
 object DebugHelperPlugin : KotlinPlugin(
     JvmPluginDescription(id = "xyz.cssxsh.mirai.plugin.debug-helper", version = "1.0.1") {
@@ -21,10 +22,10 @@ object DebugHelperPlugin : KotlinPlugin(
         DebugOnlineConfig.save()
         DebugCommands.registerAll()
 
-        DebugSubscriber.start()
+        DebugListener.registerTo(globalEventChannel())
     }
 
     override fun onDisable() {
-        DebugSubscriber.stop()
+        DebugListener.cancelAll()
     }
 }

@@ -1,8 +1,8 @@
 package io.gnuf0rce.mirai.plugin
 
 import io.gnuf0rce.mirai.plugin.data.*
-import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.Bot
+import kotlinx.coroutines.*
+import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -178,7 +178,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
     @Suppress("unused")
-    object GroupQuitCommand : SimpleCommand(owner = owner, "group-quit", description = "接受群") {
+    object GroupQuitCommand : SimpleCommand(owner = owner, "group-quit", description = "退出群") {
         @Handler
         suspend fun CommandSender.handle(group: Group) {
             runCatching {

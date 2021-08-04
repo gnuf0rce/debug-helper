@@ -4,26 +4,21 @@ import io.gnuf0rce.mirai.plugin.data.*
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.permission.*
-import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
-import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
-import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
-import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.console.plugin.jvm.*
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.event.globalEventChannel
+import net.mamoe.mirai.event.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 
-object DebugSubscriber : CoroutineScope by DebugHelperPlugin.childScope("debug-subscriber") {
+object DebugListener : SimpleListenerHost() {
 
     private val logger by DebugHelperPlugin::logger
 
@@ -73,49 +68,42 @@ object DebugSubscriber : CoroutineScope by DebugHelperPlugin.childScope("debug-s
         DebugHelperPlugin.registerPermission("online.exclude", "不发送上线通知")
     }
 
-    fun start() {
-        // 兼容性代码
-        DebugOnlineConfig.exclude.forEach { AbstractPermitteeId.ExactGroup(it).permit(exclude) }
-        globalEventChannel().apply {
-            subscribeAlways<NewFriendRequestEvent> {
-                friend += it.toData()
-                runCatching {
-                    bot.getFriendOrFail(owner).sendMessage(buildMessageChain {
-                        appendLine("@${fromNick}#${fromId}")
-                        appendLine("申请添加好友")
-                        appendLine("from $fromGroup")
-                        appendLine(message)
-                    })
-                }.onFailure {
-                    logger.warning { "发送消息失败，$it" }
-                }
-            }
-            //
-            subscribeAlways<BotInvitedJoinGroupRequestEvent> {
-                group += it.toData()
-                runCatching {
-                    bot.getFriendOrFail(owner).sendMessage(buildMessageChain {
-                        appendLine("@${invitorNick}#${invitorId}")
-                        appendLine("申请添加群")
-                        appendLine("to [$groupName](${groupId})")
-                    })
-                }.onFailure {
-                    logger.warning { "发送消息失败，$it" }
-                }
-            }
-            //
-            subscribeAlways<BotOnlineEvent> {
-                bot.groups.filterNot { exclude.testPermission(it.permitteeId) }.forEach { group ->
-                    isActive && group.run {
-                        delay(DebugOnlineConfig.duration * 1000L)
-                        sendOnlineMessage()
-                    }
-                }
-            }
+    @EventHandler
+    suspend fun NewFriendRequestEvent.mark() {
+        friend += toData()
+        runCatching {
+            bot.getFriendOrFail(owner).sendMessage(buildMessageChain {
+                appendLine("@${fromNick}#${fromId}")
+                appendLine("申请添加好友")
+                appendLine("from $fromGroup")
+                appendLine(message)
+            })
+        }.onFailure {
+            logger.warning { "发送消息失败，$it" }
         }
     }
 
-    fun stop() {
-        coroutineContext.cancelChildren()
+    @EventHandler
+    suspend fun BotInvitedJoinGroupRequestEvent.mark() {
+        group += toData()
+        runCatching {
+            bot.getFriendOrFail(owner).sendMessage(buildMessageChain {
+                appendLine("@${invitorNick}#${invitorId}")
+                appendLine("申请添加群")
+                appendLine("to [$groupName](${groupId})")
+            })
+        }.onFailure {
+            logger.warning { "发送消息失败，$it" }
+        }
+    }
+
+    @EventHandler
+    suspend fun BotOnlineEvent.notify() {
+        bot.groups.filterNot { exclude.testPermission(it.permitteeId) }.forEach { group ->
+            isActive && group.run {
+                delay(DebugOnlineConfig.duration * 1000L)
+                sendOnlineMessage()
+            }
+        }
     }
 }
