@@ -1,5 +1,6 @@
-package io.gnuf0rce.mirai.plugin
+package io.gnuf0rce.mirai.plugin.command
 
+import io.gnuf0rce.mirai.plugin.*
 import io.gnuf0rce.mirai.plugin.data.*
 import kotlinx.coroutines.*
 import net.mamoe.mirai.*

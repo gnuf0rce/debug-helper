@@ -46,9 +46,9 @@ ID: `xyz.cssxsh.mirai.plugin.debug-helper:online.exclude`
 
 ### DebugOnlineConfig
 
-1. exclude 不开启上线信息的群号 (deprecated 1.0.1 移交权限系统管理)
-2. 逐个发送消息延时，单位秒，默认 10s (since 1.0.1)
+* exclude 不开启上线信息的群号 (deprecated 1.0.1 移交权限系统管理)
+* duration 逐个发送消息延时，单位秒，默认 10s (since 1.0.1)
 
 ### DebugSetting
 
-1. owner 机器人所有者，同时也是好友申请和加群申请的联系人
+* owner 机器人所有者，同时也是好友申请和加群申请的联系人

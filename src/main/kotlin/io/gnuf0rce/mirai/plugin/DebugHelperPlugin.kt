@@ -1,10 +1,10 @@
 package io.gnuf0rce.mirai.plugin
 
+import io.gnuf0rce.mirai.plugin.command.*
 import io.gnuf0rce.mirai.plugin.data.*
 import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.plugin.jvm.*
-import net.mamoe.mirai.event.globalEventChannel
-import net.mamoe.mirai.event.registerTo
+import net.mamoe.mirai.event.*
 
 object DebugHelperPlugin : KotlinPlugin(
     JvmPluginDescription(id = "xyz.cssxsh.mirai.plugin.debug-helper", version = "1.0.1") {
