@@ -120,9 +120,13 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
             runCatching {
                 sendMessage(buildMessageChain {
                     appendLine("Friend")
-                    appendLine(friend.joinToString("\n"))
+                    appendLine(friend.joinToString("\n") {
+                        "Bot: ${it.bot}, EventId: ${it.eventId}, message: ${it.message}, QQ: @${it.fromNick}#${it.fromId}, Group: ${it.fromGroupId}"
+                    })
                     appendLine("Group")
-                    appendLine(group.joinToString("\n"))
+                    appendLine(group.joinToString("\n") {
+                        "Bot: ${it.bot}, EventId: ${it.eventId}, QQ: @${it.invitorNick}#${it.invitorId}, Group: ${it.groupName}#${it.groupId}"
+                    })
                 })
             }.onFailure {
                 sendMessage("出现错误 $it")
@@ -135,12 +139,12 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         @Handler
         suspend fun CommandSender.handle(id: Long, accept: Boolean, black: Boolean = false) {
             runCatching {
-                requireNotNull(friend.find { it.eventId == id }) { "找不到事件" }.toEvent().apply {
+                requireNotNull(friend.find { it.eventId == id || it.fromId == id }) { "找不到事件" }.toEvent().apply {
                     if (accept) accept() else reject(black)
                 }
-            }.onSuccess {
-                friend.removeIf { it.eventId == id }
-                sendMessage("处理成功")
+            }.onSuccess { event ->
+                friend.removeIf { event.eventId == id }
+                sendMessage("@${event.fromNick}#${event.fromId} 处理成功")
             }.onFailure {
                 sendMessage("出现错误 $it")
             }
@@ -152,12 +156,12 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         @Handler
         suspend fun CommandSender.handle(id: Long, accept: Boolean) {
             runCatching {
-                requireNotNull(group.find { it.eventId == id }) { "找不到事件" }.toEvent().apply {
+                requireNotNull(group.find { it.eventId == id || it.invitorId == id }) { "找不到事件" }.toEvent().apply {
                     if (accept) accept() else ignore()
                 }
-            }.onSuccess {
-                group.removeIf { it.eventId == id }
-                sendMessage("处理成功")
+            }.onSuccess { event ->
+                group.removeIf { event.eventId == id }
+                sendMessage("@${event.invitorNick}#${event.invitorId} 处理成功")
             }.onFailure {
                 sendMessage("出现错误 $it")
             }

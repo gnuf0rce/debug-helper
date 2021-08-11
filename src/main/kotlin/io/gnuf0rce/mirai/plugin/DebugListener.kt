@@ -74,7 +74,7 @@ object DebugListener : SimpleListenerHost() {
         friend += toData()
         runCatching {
             bot.getFriendOrFail(owner).sendMessage(buildMessageChain {
-                appendLine("@${fromNick}#${fromId}")
+                appendLine("@${fromNick}#${fromId} with <${eventId}>")
                 appendLine("申请添加好友")
                 appendLine("from $fromGroup")
                 appendLine(message)
@@ -89,7 +89,7 @@ object DebugListener : SimpleListenerHost() {
         group += toData()
         runCatching {
             bot.getFriendOrFail(owner).sendMessage(buildMessageChain {
-                appendLine("@${invitorNick}#${invitorId}")
+                appendLine("@${invitorNick}#${invitorId} with <${eventId}>")
                 appendLine("申请添加群")
                 appendLine("to [$groupName](${groupId})")
             })
