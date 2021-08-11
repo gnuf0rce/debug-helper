@@ -22,6 +22,8 @@ object DebugHelperPlugin : KotlinPlugin(
         DebugOnlineConfig.save()
         DebugCommands.registerAll()
 
+        logger.info("机器人所有者 ${DebugSetting.owner}")
+
         DebugListener.registerTo(globalEventChannel())
     }
 
