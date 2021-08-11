@@ -46,7 +46,8 @@ object DebugListener : SimpleListenerHost() {
 
     private val avatars = mutableMapOf<Long, ExternalResource>()
 
-    private suspend fun Contact.sendOnlineMessage(): Boolean {
+    private suspend fun Contact.sendOnlineMessage(millis: Long = 0): Boolean {
+        delay(millis)
         return runCatching {
             val avatar = avatars.getOrPut(bot.id) {
                 HttpClient(OkHttp).use { it.get<ByteArray>(bot.avatarUrl) }.toExternalResource()
@@ -100,10 +101,7 @@ object DebugListener : SimpleListenerHost() {
     @EventHandler
     suspend fun BotOnlineEvent.notify() {
         bot.groups.filterNot { exclude.testPermission(it.permitteeId) }.forEach { group ->
-            isActive && group.run {
-                delay(DebugOnlineConfig.duration * 1000L)
-                sendOnlineMessage()
-            }
+            isActive && group.sendOnlineMessage(DebugOnlineConfig.duration * 1000L)
         }
     }
 }
