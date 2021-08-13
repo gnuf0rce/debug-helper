@@ -32,7 +32,7 @@
 | `/<group-quit> [group]`           | 退出群               |
 | `/<gc>`                           | 主动触发 JVM GC      |
 
-id 是事件id，可以通过 `/request` 查看  
+id 是事件id 或者 好友id 或者 群id  
 contact 和 at 这两个参数可以是 数字号码 也可以是 @XXX  
 
 ## 权限
