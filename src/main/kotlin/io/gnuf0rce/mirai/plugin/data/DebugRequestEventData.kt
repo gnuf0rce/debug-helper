@@ -6,6 +6,7 @@ import kotlinx.serialization.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.utils.*
 
 object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
 
@@ -61,6 +62,7 @@ fun BotInvitedJoinGroupRequestEvent.toData() = GroupRequestEventData(
     invitorNick
 )
 
+@OptIn(MiraiInternalApi::class)
 fun GroupRequestEventData.toEvent() = BotInvitedJoinGroupRequestEvent(
     Bot.getInstance(bot),
     eventId,
