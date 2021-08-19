@@ -210,6 +210,20 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
     @Suppress("unused")
+    object GroupNickCommand : SimpleCommand(owner = owner, "group-nick", description = "群昵称") {
+        @Handler
+        suspend fun CommandSender.handle(name: String, group: Group = subject as Group) {
+            runCatching {
+                group.botAsMember.nameCard = name
+            }.onSuccess {
+                sendMessage("处理成功")
+            }.onFailure {
+                sendMessage("出现错误 $it")
+            }
+        }
+    }
+
+    @Suppress("unused")
     object GarbageCommand : SimpleCommand(owner = owner, "gc", description = "垃圾回收") {
 
         @Handler
