@@ -6,13 +6,13 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.internal.message.*
 
-@ConsoleExperimentalApi
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
 
     private val all by lazy { this::class.nestedClasses.mapNotNull { it.objectInstance as? Command } }
@@ -36,8 +36,21 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         @Handler
         suspend fun CommandSender.handle(text: String, atAll: Boolean = false) {
             runCatching {
-                val message = if (atAll) AtAll + text else text.toPlainText()
+                val message = if (atAll) AtAll + text + ForceAsLongMessage else text.toPlainText()
                 Bot.instances.flatMap(Bot::groups).sendMessage(message)
+            }.onFailure {
+                sendMessage("'${text}'发送失败, $it")
+            }
+        }
+    }
+
+    @Suppress("unused")
+    object AtAllCommand : SimpleCommand(owner = owner, "at-all", description = "预告") {
+        @Handler
+        suspend fun CommandSender.handle(text: String, group: Group = subject as Group) {
+            runCatching {
+                val message = AtAll + text + ForceAsLongMessage
+                group.sendMessage(message)
             }.onFailure {
                 sendMessage("'${text}'发送失败, $it")
             }
