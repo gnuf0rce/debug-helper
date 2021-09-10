@@ -112,7 +112,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                     Bot.instances.forEach { bot ->
                         appendLine("--- ${bot.nick} ${bot.id} ---")
                         bot.groups.forEach { group ->
-                            appendLine("$group -> <${group.name}>[${group.members.size}] ")
+                            appendLine("(${group.id})[${group.botPermission}] -> <${group.name}>[${group.members.size}](${group.botMuteRemaining})")
                         }
                     }
                 })
@@ -225,7 +225,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     @Suppress("unused")
     object GarbageCommand : SimpleCommand(owner = owner, "gc", description = "垃圾回收") {
-
         @Handler
         suspend fun CommandSender.handle() {
             System.gc()
