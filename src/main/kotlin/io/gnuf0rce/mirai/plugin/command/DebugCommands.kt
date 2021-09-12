@@ -156,7 +156,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                     if (accept) accept() else reject(black)
                 }
             }.onSuccess { event ->
-                friend.removeIf { event.eventId == id }
+                friend.removeIf { event.eventId == it.eventId || event.fromId == it.fromId }
                 sendMessage("@${event.fromNick}#${event.fromId} 处理成功")
             }.onFailure {
                 sendMessage("出现错误 $it")
@@ -169,12 +169,12 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         @Handler
         suspend fun CommandSender.handle(id: Long, accept: Boolean) {
             runCatching {
-                requireNotNull(group.find { it.eventId == id || it.invitorId == id }) { "找不到事件" }.toEvent().apply {
+                requireNotNull(group.find { it.eventId == id || it.groupId == id }) { "找不到事件" }.toEvent().apply {
                     if (accept) accept() else ignore()
                 }
             }.onSuccess { event ->
-                group.removeIf { event.eventId == id }
-                sendMessage("@${event.invitorNick}#${event.invitorId} 处理成功")
+                group.removeIf { event.eventId == it.eventId || event.groupId == it.groupId }
+                sendMessage("@${event.invitorNick}#${event.invitorId} to ${event.groupName}#${event.groupId} 处理成功")
             }.onFailure {
                 sendMessage("出现错误 $it")
             }

@@ -52,3 +52,5 @@ ID: `xyz.cssxsh.mirai.plugin.debug-helper:online.exclude`
 ### DebugSetting
 
 * owner 机器人所有者，同时也是好友申请和加群申请的联系人
+* auto_friend_request 自动同意好友请求
+* auto_group_request 自动同意加群请求
