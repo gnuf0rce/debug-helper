@@ -6,13 +6,13 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.internal.message.*
 
-@ConsoleExperimentalApi
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
 
     private val all by lazy { this::class.nestedClasses.mapNotNull { it.objectInstance as? Command } }
@@ -36,8 +36,21 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         @Handler
         suspend fun CommandSender.handle(text: String, atAll: Boolean = false) {
             runCatching {
-                val message = if (atAll) AtAll + text else text.toPlainText()
+                val message = if (atAll) AtAll + text + ForceAsLongMessage else text.toPlainText()
                 Bot.instances.flatMap(Bot::groups).sendMessage(message)
+            }.onFailure {
+                sendMessage("'${text}'发送失败, $it")
+            }
+        }
+    }
+
+    @Suppress("unused")
+    object AtAllCommand : SimpleCommand(owner = owner, "at-all", description = "预告") {
+        @Handler
+        suspend fun CommandSender.handle(text: String, group: Group = subject as Group) {
+            runCatching {
+                val message = AtAll + text + ForceAsLongMessage
+                group.sendMessage(message)
             }.onFailure {
                 sendMessage("'${text}'发送失败, $it")
             }
@@ -99,7 +112,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                     Bot.instances.forEach { bot ->
                         appendLine("--- ${bot.nick} ${bot.id} ---")
                         bot.groups.forEach { group ->
-                            appendLine("$group -> <${group.name}>[${group.members.size}] ")
+                            appendLine("(${group.id})[${group.botPermission}] -> <${group.name}>[${group.members.size}](${group.botMuteRemaining})")
                         }
                     }
                 })
@@ -143,7 +156,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                     if (accept) accept() else reject(black)
                 }
             }.onSuccess { event ->
-                friend.removeIf { event.eventId == id }
+                friend.removeIf { event.eventId == it.eventId || event.fromId == it.fromId }
                 sendMessage("@${event.fromNick}#${event.fromId} 处理成功")
             }.onFailure {
                 sendMessage("出现错误 $it")
@@ -156,12 +169,12 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         @Handler
         suspend fun CommandSender.handle(id: Long, accept: Boolean) {
             runCatching {
-                requireNotNull(group.find { it.eventId == id || it.invitorId == id }) { "找不到事件" }.toEvent().apply {
+                requireNotNull(group.find { it.eventId == id || it.groupId == id }) { "找不到事件" }.toEvent().apply {
                     if (accept) accept() else ignore()
                 }
             }.onSuccess { event ->
-                group.removeIf { event.eventId == id }
-                sendMessage("@${event.invitorNick}#${event.invitorId} 处理成功")
+                group.removeIf { event.eventId == it.eventId || event.groupId == it.groupId }
+                sendMessage("@${event.invitorNick}#${event.invitorId} to ${event.groupName}#${event.groupId} 处理成功")
             }.onFailure {
                 sendMessage("出现错误 $it")
             }
@@ -197,8 +210,21 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
     @Suppress("unused")
-    object GarbageCommand : SimpleCommand(owner = owner, "gc", description = "垃圾回收") {
+    object GroupNickCommand : SimpleCommand(owner = owner, "group-nick", description = "群昵称") {
+        @Handler
+        suspend fun CommandSender.handle(name: String, group: Group = subject as Group) {
+            runCatching {
+                group.botAsMember.nameCard = name
+            }.onSuccess {
+                sendMessage("处理成功")
+            }.onFailure {
+                sendMessage("出现错误 $it")
+            }
+        }
+    }
 
+    @Suppress("unused")
+    object GarbageCommand : SimpleCommand(owner = owner, "gc", description = "垃圾回收") {
         @Handler
         suspend fun CommandSender.handle() {
             System.gc()

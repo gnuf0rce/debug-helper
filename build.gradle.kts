@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.github.gnuf0rce"
-version = "1.0.2"
+version = "1.0.3"
 
 repositories {
     mavenLocal()
@@ -17,6 +17,10 @@ repositories {
     jcenter()
     maven(url = "https://maven.aliyun.com/repository/gradle-plugin")
     gradlePluginPortal()
+}
+
+dependencies {
+    compileOnly("net.mamoe:mirai-core-jvm:2.6.7")
 }
 
 kotlin {

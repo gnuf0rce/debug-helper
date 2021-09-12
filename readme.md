@@ -18,19 +18,21 @@
 
 ### DebugCommands
 
-| 指令                              | 描述                 |
-|:----------------------------------|:---------------------|
-| `/<send-groups> [text] [atAll]`   | 向所有群发送消息     |
-| `/<send> [contact] [text] [at]?`  | 向指定联系人发送消息 |
-| `/<recall>`                       | 尝试撤回消息         |
-| `/<group>`                        | 查看当前的群组       |
-| `/<friend>`                       | 查看当前的好友       |
-| `/<request>`                      | 查看申请列表         |
-| `/<friend-request> [id] [black]?` | 接受好友申请         |
-| `/<group-request> [id]`           | 接受群申请           |
-| `/<friend-delete> [friend]`       | 删除好友             |
-| `/<group-quit> [group]`           | 退出群               |
-| `/<gc>`                           | 主动触发 JVM GC      |
+| 指令                                       | 描述                 |
+|:-------------------------------------------|:---------------------|
+| `/<send-groups> [text] [atAll]`            | 向所有群发送消息     |
+| `/<at-all> [text] [group]?`                | 向指定群发送AtAll    |
+| `/<send> [contact] [text] [at]?`           | 向指定联系人发送消息 |
+| `/<recall>`                                | 尝试撤回消息         |
+| `/<group>`                                 | 查看当前的群组       |
+| `/<friend>`                                | 查看当前的好友       |
+| `/<request>`                               | 查看申请列表         |
+| `/<friend-request> [id] [accept] [black]?` | 接受好友申请         |
+| `/<group-request> [id] [accept]`           | 接受群申请           |
+| `/<friend-delete> [friend]`                | 删除好友             |
+| `/<group-quit> [group]`                    | 退出群               |
+| `/<group-nick> [name] [group]?`            | 设置群名片           |
+| `/<gc>`                                    | 主动触发 JVM GC      |
 
 id 是事件id 或者 好友id 或者 群id  
 contact 和 at 这两个参数可以是 数字号码 也可以是 @XXX  
@@ -52,3 +54,5 @@ ID: `xyz.cssxsh.mirai.plugin.debug-helper:online.exclude`
 ### DebugSetting
 
 * owner 机器人所有者，同时也是好友申请和加群申请的联系人
+* auto_friend_request 自动同意好友请求
+* auto_group_request 自动同意加群请求

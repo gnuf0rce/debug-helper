@@ -24,6 +24,10 @@ object DebugListener : SimpleListenerHost() {
 
     private val owner by DebugSetting::owner
 
+    private val autoFriendAccept by DebugSetting::autoFriendAccept
+
+    private val autoGroupAccept by DebugSetting::autoGroupAccept
+
     private val friend by DebugRequestEventData::friend
 
     private val group by DebugRequestEventData::group
@@ -71,13 +75,14 @@ object DebugListener : SimpleListenerHost() {
 
     @EventHandler
     suspend fun NewFriendRequestEvent.mark() {
-        friend += toData()
+        if (autoFriendAccept) accept() else friend += toData()
         runCatching {
             bot.getFriendOrFail(owner).sendMessage(buildMessageChain {
                 appendLine("@${fromNick}#${fromId} with <${eventId}>")
                 appendLine("申请添加好友")
                 appendLine("from $fromGroup")
                 appendLine(message)
+                if (autoFriendAccept) appendLine("已自动同意")
             })
         }.onFailure {
             logger.warning { "发送消息失败，$it" }
@@ -86,12 +91,13 @@ object DebugListener : SimpleListenerHost() {
 
     @EventHandler
     suspend fun BotInvitedJoinGroupRequestEvent.mark() {
-        group += toData()
+        if (autoGroupAccept) accept() else group += toData()
         runCatching {
             bot.getFriendOrFail(owner).sendMessage(buildMessageChain {
                 appendLine("@${invitorNick}#${invitorId} with <${eventId}>")
                 appendLine("申请添加群")
                 appendLine("to [$groupName](${groupId})")
+                if (autoGroupAccept) appendLine("已自动同意")
             })
         }.onFailure {
             logger.warning { "发送消息失败，$it" }
