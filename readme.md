@@ -54,3 +54,14 @@ ID: `xyz.cssxsh.mirai.plugin.debug-helper:online.exclude`
 * owner 机器人所有者，同时也是好友申请和加群申请的联系人
 * auto_friend_request 自动同意好友请求
 * auto_group_request 自动同意加群请求
+
+## 安装
+
+### MCL 指令安装
+
+`./mcl --update-package io.github.gnuf0rce:debug-helper --channel stable --type plugin`
+
+### 手动安装
+
+* 运行 [Mirai Console](https://github.com/mamoe/mirai-console) 生成`plugins`文件夹
+* 从 [Releases](https://github.com/gnuf0rce/debug-helper/releases) 下载`jar`并将其放入`plugins`文件夹中
