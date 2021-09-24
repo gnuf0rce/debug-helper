@@ -6,12 +6,14 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
+import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.internal.message.*
 
+@OptIn(ConsoleExperimentalApi::class)
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
 
@@ -148,16 +150,24 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
     @Suppress("unused")
-    object FriendRequestCommand : SimpleCommand(owner = owner, "friend-request", description = "接受好友") {
+    object ContactRequestCommand : SimpleCommand(owner = owner, "contact-request", description = "接受联系人") {
         @Handler
-        suspend fun CommandSender.handle(id: Long, accept: Boolean, black: Boolean = false) {
+        suspend fun CommandSender.handle(id: Long, accept: Boolean = true, black: Boolean = false) {
             runCatching {
-                requireNotNull(friend.find { it.eventId == id || it.fromId == id }) { "找不到事件" }.toEvent().apply {
-                    if (accept) accept() else reject(black)
+                val data = friend.find { it.eventId == id || it.fromId == id }?.apply {
+                    with(toEvent()) {
+                        if (accept) accept() else reject(black)
+                    }
+                    friend.removeIf { eventId == it.eventId || fromId == it.fromId }
+                    sendMessage("@${fromNick}#${fromId} 处理成功")
+                } ?: group.find { it.eventId == id || it.groupId == id }?.apply {
+                    with(toEvent()) {
+                        if (accept) accept() else ignore()
+                    }
+                    group.removeIf { eventId == it.eventId || groupId == it.groupId }
+                    sendMessage("@${invitorNick}#${invitorId} to ${groupName}#${groupId} 处理成功")
                 }
-            }.onSuccess { event ->
-                friend.removeIf { event.eventId == it.eventId || event.fromId == it.fromId }
-                sendMessage("@${event.fromNick}#${event.fromId} 处理成功")
+                requireNotNull(data) { "找不到事件" }
             }.onFailure {
                 sendMessage("出现错误 $it")
             }
@@ -165,42 +175,13 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
     @Suppress("unused")
-    object GroupRequestCommand : SimpleCommand(owner = owner, "group-request", description = "接受群") {
+    object FriendDeleteCommand : SimpleCommand(owner = owner, "contact-delete", description = "删除联系人") {
         @Handler
-        suspend fun CommandSender.handle(id: Long, accept: Boolean) {
+        suspend fun CommandSender.handle(contact: Contact) {
             runCatching {
-                requireNotNull(group.find { it.eventId == id || it.groupId == id }) { "找不到事件" }.toEvent().apply {
-                    if (accept) accept() else ignore()
-                }
-            }.onSuccess { event ->
-                group.removeIf { event.eventId == it.eventId || event.groupId == it.groupId }
-                sendMessage("@${event.invitorNick}#${event.invitorId} to ${event.groupName}#${event.groupId} 处理成功")
-            }.onFailure {
-                sendMessage("出现错误 $it")
-            }
-        }
-    }
-
-    @Suppress("unused")
-    object FriendDeleteCommand : SimpleCommand(owner = owner, "friend-delete", description = "删除好友") {
-        @Handler
-        suspend fun CommandSender.handle(friend: Friend) {
-            runCatching {
-                friend.delete()
-            }.onSuccess {
-                sendMessage("处理成功")
-            }.onFailure {
-                sendMessage("出现错误 $it")
-            }
-        }
-    }
-
-    @Suppress("unused")
-    object GroupQuitCommand : SimpleCommand(owner = owner, "group-quit", description = "退出群") {
-        @Handler
-        suspend fun CommandSender.handle(group: Group) {
-            runCatching {
-                group.quit()
+                (contact as? Friend)?.delete()
+                (contact as? Group)?.quit()
+                (contact as? Stranger)?.delete()
             }.onSuccess {
                 sendMessage("处理成功")
             }.onFailure {
