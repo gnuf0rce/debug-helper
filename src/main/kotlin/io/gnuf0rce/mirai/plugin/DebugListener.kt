@@ -32,6 +32,7 @@ object DebugListener : SimpleListenerHost() {
 
     private val group by DebugRequestEventData::group
 
+    @OptIn(MiraiExperimentalApi::class)
     private fun online(bot: Bot, picture: String = bot.avatarUrl) = buildXmlMessage(1) {
         templateId = -1
         action = "web"

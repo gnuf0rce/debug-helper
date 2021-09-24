@@ -6,12 +6,14 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
+import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.internal.message.*
 
+@OptIn(ConsoleExperimentalApi::class)
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
 
