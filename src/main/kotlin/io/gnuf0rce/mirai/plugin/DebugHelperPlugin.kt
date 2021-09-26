@@ -8,7 +8,7 @@ import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.event.*
 
 object DebugHelperPlugin : KotlinPlugin(
-    JvmPluginDescription(id = "xyz.cssxsh.mirai.plugin.debug-helper", version = "1.0.4") {
+    JvmPluginDescription(id = "xyz.cssxsh.mirai.plugin.debug-helper", version = "1.0.5") {
         name("debug-helper")
         author("cssxsh")
     }
@@ -25,6 +25,7 @@ object DebugHelperPlugin : KotlinPlugin(
         DebugCommands.registerAll()
 
         logger.info("机器人所有者 ${DebugSetting.owner}")
+        logger.info("不发送上线通知请使用 /perm add g* xyz.cssxsh.mirai.plugin.debug-helper:online.exclude 赋予权限")
 
         DebugListener.registerTo(globalEventChannel())
     }

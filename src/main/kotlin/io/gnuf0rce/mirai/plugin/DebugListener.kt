@@ -5,7 +5,9 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
-import net.mamoe.mirai.Bot
+import net.mamoe.mirai.*
+import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.permission.*
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
@@ -27,6 +29,10 @@ object DebugListener : SimpleListenerHost() {
     private val autoFriendAccept by DebugSetting::autoFriendAccept
 
     private val autoGroupAccept by DebugSetting::autoGroupAccept
+
+    private val autoSendStatus by DebugSetting::autoSendStatus
+
+    private val onlineMessageSendDuration by DebugOnlineConfig::duration
 
     private val friend by DebugRequestEventData::friend
 
@@ -105,10 +111,31 @@ object DebugListener : SimpleListenerHost() {
         }
     }
 
+    private var status = false
+
     @EventHandler
-    suspend fun BotOnlineEvent.notify() {
+    suspend fun BotOnlineEvent.notify() = supervisorScope {
+        if (autoSendStatus > 0 && !status) {
+            launch {
+                val contact = runCatching {
+                    bot.getFriendOrFail(owner)
+                }.onFailure {
+                    logger.warning { "所有者联系人 $owner 获取失败" }
+                }.getOrThrow()
+
+                status = true
+                while (isActive) {
+                    BuiltInCommands.StatusCommand.runCatching {
+                        contact.asCommandSender().handle()
+                    }.onFailure {
+                        logger.warning({ "发送状态消息失败" }, it)
+                    }
+                    delay(autoSendStatus * 60_000L)
+                }
+            }
+        }
         bot.groups.filterNot { exclude.testPermission(it.permitteeId) }.forEach { group ->
-            isActive && group.sendOnlineMessage(DebugOnlineConfig.duration * 1000L)
+            isActive && group.sendOnlineMessage(onlineMessageSendDuration * 1000L)
         }
     }
 }
