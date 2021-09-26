@@ -1,4 +1,5 @@
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:OptIn(MiraiInternalApi::class)
 
 package io.gnuf0rce.mirai.plugin.data
 
@@ -62,7 +63,6 @@ fun BotInvitedJoinGroupRequestEvent.toData() = GroupRequestEventData(
     invitorNick
 )
 
-@OptIn(MiraiInternalApi::class)
 fun GroupRequestEventData.toEvent() = BotInvitedJoinGroupRequestEvent(
     Bot.getInstance(bot),
     eventId,

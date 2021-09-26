@@ -14,7 +14,7 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.internal.message.*
 
 @OptIn(ConsoleExperimentalApi::class)
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
 object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
 
     private val all by lazy { this::class.nestedClasses.mapNotNull { it.objectInstance as? Command } }
@@ -33,7 +33,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    @Suppress("unused")
     object SendAllCommand : SimpleCommand(owner = owner, "send-groups", description = "预告") {
         @Handler
         suspend fun CommandSender.handle(text: String, atAll: Boolean = false) {
@@ -46,7 +45,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    @Suppress("unused")
     object AtAllCommand : SimpleCommand(owner = owner, "at-all", description = "预告") {
         @Handler
         suspend fun CommandSender.handle(text: String, group: Group = subject as Group) {
@@ -59,7 +57,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    @Suppress("unused")
     object SendCommand : SimpleCommand(owner = owner, "send", description = "发送消息") {
         @Handler
         suspend fun CommandSender.handle(contact: Contact, text: String, at: User? = null) {
@@ -72,7 +69,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    @Suppress("unused")
     object RecallCommand : SimpleCommand(owner = owner, "recall", description = "撤回消息") {
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle() {
@@ -86,7 +82,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    @Suppress("unused")
     object FriendCommand : SimpleCommand(owner = owner, "friend", description = "查看当前的好友") {
         @Handler
         suspend fun CommandSender.handle() {
@@ -105,7 +100,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    @Suppress("unused")
     object GroupCommand : SimpleCommand(owner = owner, "group", description = "查看当前的群组") {
         @Handler
         suspend fun CommandSender.handle() {
@@ -128,7 +122,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     private val group by DebugRequestEventData::group
 
-    @Suppress("unused")
     object RequestListCommand : SimpleCommand(owner = owner, "request", description = "申请列表") {
         @Handler
         suspend fun CommandSender.handle() {
@@ -149,7 +142,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    @Suppress("unused")
     object ContactRequestCommand : SimpleCommand(owner = owner, "contact-request", description = "接受联系人") {
         @Handler
         suspend fun CommandSender.handle(id: Long, accept: Boolean = true, black: Boolean = false) {
@@ -174,7 +166,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    @Suppress("unused")
     object FriendDeleteCommand : SimpleCommand(owner = owner, "contact-delete", description = "删除联系人") {
         @Handler
         suspend fun CommandSender.handle(contact: Contact) {
@@ -190,7 +181,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    @Suppress("unused")
     object GroupNickCommand : SimpleCommand(owner = owner, "group-nick", description = "群昵称") {
         @Handler
         suspend fun CommandSender.handle(name: String, group: Group = subject as Group) {
@@ -204,7 +194,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    @Suppress("unused")
     object GarbageCommand : SimpleCommand(owner = owner, "gc", description = "垃圾回收") {
         @Handler
         suspend fun CommandSender.handle() {
