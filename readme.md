@@ -1,6 +1,6 @@
 # [Debug Helper](https://github.com/gnuf0rce/debug-helper)
 
-> 基于 [Mirai Console](https://github.com/mamoe/mirai-console) 的RSS订阅插件
+> 基于 [Mirai Console](https://github.com/mamoe/mirai-console) 的 调试小工具 插件
 
 [![Release](https://img.shields.io/github/v/release/gnuf0rce/debug-helper)](https://github.com/gnuf0rce/debug-helper/releases)
 [![Downloads](https://img.shields.io/github/downloads/gnuf0rce/debug-helper/total)](https://shields.io/category/downloads)
