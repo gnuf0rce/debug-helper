@@ -24,7 +24,7 @@ object DebugListener : SimpleListenerHost() {
 
     private val logger by DebugHelperPlugin::logger
 
-    private val owner by DebugSetting::owner
+    private fun Bot.owner() = getFriend(DebugSetting.owner)
 
     private val autoFriendAccept by DebugSetting::autoFriendAccept
 
@@ -84,7 +84,7 @@ object DebugListener : SimpleListenerHost() {
     suspend fun NewFriendRequestEvent.mark() {
         if (autoFriendAccept) accept() else friend += toData()
         runCatching {
-            bot.getFriendOrFail(owner).sendMessage(buildMessageChain {
+            bot.owner()?.sendMessage(buildMessageChain {
                 appendLine("@${fromNick}#${fromId} with <${eventId}>")
                 appendLine("申请添加好友")
                 appendLine("from $fromGroup")
@@ -100,7 +100,7 @@ object DebugListener : SimpleListenerHost() {
     suspend fun BotInvitedJoinGroupRequestEvent.mark() {
         if (autoGroupAccept) accept() else group += toData()
         runCatching {
-            bot.getFriendOrFail(owner).sendMessage(buildMessageChain {
+            bot.owner()?.sendMessage(buildMessageChain {
                 appendLine("@${invitorNick}#${invitorId} with <${eventId}>")
                 appendLine("申请添加群")
                 appendLine("to [$groupName](${groupId})")
@@ -117,16 +117,10 @@ object DebugListener : SimpleListenerHost() {
     suspend fun BotOnlineEvent.notify() = supervisorScope {
         if (autoSendStatus > 0 && !status) {
             launch {
-                val contact = runCatching {
-                    bot.getFriendOrFail(owner)
-                }.onFailure {
-                    logger.warning { "所有者联系人 $owner 获取失败" }
-                }.getOrThrow()
-
                 status = true
                 while (isActive) {
                     BuiltInCommands.StatusCommand.runCatching {
-                        contact.asCommandSender().handle()
+                        bot.owner()?.asCommandSender()?.handle()
                     }.onFailure {
                         logger.warning({ "发送状态消息失败" }, it)
                     }

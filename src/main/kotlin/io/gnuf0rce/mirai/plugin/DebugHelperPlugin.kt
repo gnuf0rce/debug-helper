@@ -24,7 +24,11 @@ object DebugHelperPlugin : KotlinPlugin(
         DebugOnlineConfig.save()
         DebugCommands.registerAll()
 
-        logger.info("机器人所有者 ${DebugSetting.owner}")
+        if (DebugSetting.owner != DebugSetting.OwnerDefault) {
+            logger.info( "机器人所有者 ${DebugSetting.owner}")
+        } else {
+            logger.warning( "机器人所有者 未设置")
+        }
         logger.info("不发送上线通知请使用 /perm add g* xyz.cssxsh.mirai.plugin.debug-helper:online.exclude 赋予权限")
 
         DebugListener.registerTo(globalEventChannel())

@@ -3,8 +3,10 @@ package io.gnuf0rce.mirai.plugin.data
 import net.mamoe.mirai.console.data.*
 
 object DebugSetting: ReadOnlyPluginConfig("DebugSetting") {
+    const val OwnerDefault = 12345L
+
     @ValueDescription("机器人所有者")
-    val owner by value(12345L)
+    val owner by value(OwnerDefault)
 
     @ValueName("auto_friend_request")
     @ValueDescription("自动同意好友请求")
