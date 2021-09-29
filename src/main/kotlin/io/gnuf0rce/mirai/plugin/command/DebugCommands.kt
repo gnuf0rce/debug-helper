@@ -2,6 +2,9 @@ package io.gnuf0rce.mirai.plugin.command
 
 import io.gnuf0rce.mirai.plugin.*
 import io.gnuf0rce.mirai.plugin.data.*
+import io.ktor.client.*
+import io.ktor.client.engine.okhttp.*
+import io.ktor.client.request.*
 import kotlinx.coroutines.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
@@ -9,9 +12,11 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.internal.message.*
+import java.io.InputStream
 
 @OptIn(ConsoleExperimentalApi::class)
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
@@ -199,6 +204,21 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         suspend fun CommandSender.handle() {
             System.gc()
             sendMessage("GC完毕")
+        }
+    }
+
+    object ImageCommand : SimpleCommand(owner = owner, "random-image", description = "随机发送一张图片") {
+        @Handler
+        suspend fun CommandSenderOnMessage<*>.handle() {
+            runCatching {
+                HttpClient(OkHttp).use { http ->
+                    http.get<InputStream>("https://pximg.rainchan.win/img").use { input ->
+                        subject!!.sendImage(input)
+                    }
+                }
+            }.onFailure {
+                sendMessage("出现错误 $it")
+            }
         }
     }
 }
