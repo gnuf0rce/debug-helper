@@ -1,14 +1,13 @@
 plugins {
-    val kotlinVersion = "1.5.21"
-    kotlin("jvm") version kotlinVersion
-    kotlin("plugin.serialization") version kotlinVersion
+    kotlin("jvm") version "1.5.21"
+    kotlin("plugin.serialization") version "1.5.21"
 
     id("net.mamoe.mirai-console") version "2.7.1"
     id("net.mamoe.maven-central-publish") version "0.6.1"
 }
 
 group = "io.github.gnuf0rce"
-version = "1.0.5"
+version = "1.0.6"
 
 mavenCentralPublish {
     useCentralS01()
@@ -24,7 +23,6 @@ repositories {
     maven(url = "https://maven.aliyun.com/repository/releases")
     maven(url = "https://maven.aliyun.com/repository/public")
     mavenCentral()
-    jcenter()
     maven(url = "https://maven.aliyun.com/repository/gradle-plugin")
     gradlePluginPortal()
 }
