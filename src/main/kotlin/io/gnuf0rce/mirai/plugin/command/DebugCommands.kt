@@ -30,6 +30,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     private val logger get() = DebugHelperPlugin.logger
 
+    private val randomImageApi get() = DebugSetting.randomImageApi
+
     private suspend fun Collection<Contact>.sendMessage(message: Message) = map {
         runCatching {
             it.sendMessage(message)
@@ -212,7 +214,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         suspend fun CommandSenderOnMessage<*>.handle() {
             runCatching {
                 HttpClient(OkHttp).use { http ->
-                    http.get<InputStream>("https://pximg.rainchan.win/img").use { input ->
+                    http.get<InputStream>(randomImageApi).use { input ->
                         subject!!.sendImage(input)
                     }
                 }
