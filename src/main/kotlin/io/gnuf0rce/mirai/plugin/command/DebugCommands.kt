@@ -211,11 +211,11 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     object ImageCommand : SimpleCommand(owner = owner, "random-image", description = "随机发送一张图片") {
         @Handler
-        suspend fun CommandSenderOnMessage<*>.handle() {
+        suspend fun CommandSender.handle(contact: Contact = subject as Contact) {
             runCatching {
                 HttpClient(OkHttp).use { http ->
                     http.get<InputStream>(randomImageApi).use { input ->
-                        subject!!.sendImage(input)
+                        contact.sendImage(input)
                     }
                 }
             }.onFailure {
