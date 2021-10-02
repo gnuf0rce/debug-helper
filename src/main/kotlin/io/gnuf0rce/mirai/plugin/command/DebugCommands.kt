@@ -13,9 +13,11 @@ import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.message.*
 import java.io.InputStream
 
 @OptIn(ConsoleExperimentalApi::class)
@@ -218,6 +220,25 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                         contact.sendImage(input)
                     }
                 }
+            }.onFailure {
+                sendMessage("出现错误 $it")
+            }
+        }
+    }
+
+    object ForwardCommand : SimpleCommand(owner = owner, "forward", description = "转发") {
+        @Handler
+        suspend fun CommandSenderOnMessage<*>.handle(contact: Contact, title: String = "转发测试") {
+            runCatching {
+                val nodes = mutableListOf<MessageEvent>()
+                while (isActive && nodes.size <= 200) {
+                    val message = fromEvent.nextMessage { nodes.add(it) }.contentToString()
+
+                    if (message.endsWith('.') || message.endsWith('。')) break
+                }
+                contact.sendMessage(nodes.toForwardMessage(object : ForwardMessage.DisplayStrategy {
+                    override fun generateTitle(forward: RawForwardMessage): String = title
+                }))
             }.onFailure {
                 sendMessage("出现错误 $it")
             }

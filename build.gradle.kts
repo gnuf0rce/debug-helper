@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.github.gnuf0rce"
-version = "1.0.6"
+version = "1.0.7"
 
 mavenCentralPublish {
     useCentralS01()

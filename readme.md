@@ -32,6 +32,7 @@
 | `/<group-nick> [name] [group]?`              | 设置群名片           |
 | `/<gc>`                                      | 主动触发 JVM GC      |
 | `/<random-image> [contact]?`                 | 随机发送一张图片     |
+| `/<forward> [contact] [title]?`              | 转发消息，句号结束   |
 
 id 是事件id 或者 好友id 或者 群id  
 contact 和 at 这两个参数可以是 数字号码 也可以是 @XXX  
@@ -47,8 +48,7 @@ ID: `xyz.cssxsh.mirai.plugin.debug-helper:online.exclude`
 
 ### DebugOnlineConfig
 
-* exclude 不开启上线信息的群号 (deprecated 1.0.1 移交权限系统管理)
-* duration 逐个发送消息延时，单位秒，默认 10s (since 1.0.1)
+* duration 逐个发送消息延时，单位秒，默认 10s
 
 ### DebugSetting
 
@@ -56,7 +56,7 @@ ID: `xyz.cssxsh.mirai.plugin.debug-helper:online.exclude`
 * auto_friend_request 自动同意好友请求
 * auto_group_request 自动同意加群请求
 * auto_send_status 自动发送机器人状态到所有者的间隔，单位为分钟，为零时不开启此项功能
-* random_image_api 随即图片API by <https://rainchan.win/projects/pximg>
+* random_image_api 随机图片API by <https://rainchan.win/projects/pximg>
 
 ## 安装
 
