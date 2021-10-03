@@ -8,7 +8,7 @@ import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.event.*
 
 object DebugHelperPlugin : KotlinPlugin(
-    JvmPluginDescription(id = "xyz.cssxsh.mirai.plugin.debug-helper", version = "1.0.7") {
+    JvmPluginDescription(id = "xyz.cssxsh.mirai.plugin.debug-helper", version = "1.0.8") {
         name("debug-helper")
         author("cssxsh")
     }

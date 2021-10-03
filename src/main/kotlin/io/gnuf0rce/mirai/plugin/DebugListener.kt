@@ -116,7 +116,7 @@ object DebugListener : SimpleListenerHost() {
     @EventHandler
     suspend fun BotOnlineEvent.notify() = supervisorScope {
         if (autoSendStatus > 0 && !status) {
-            launch {
+            this@DebugListener.launch {
                 status = true
                 while (isActive) {
                     BuiltInCommands.StatusCommand.runCatching {

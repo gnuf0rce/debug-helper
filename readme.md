@@ -28,7 +28,7 @@
 | `/<friend>`                                  | 查看当前的好友       |
 | `/<request>`                                 | 查看申请列表         |
 | `/<contact-request> [id] [accept]? [black]?` | 接受联系人申请       |
-| `/<contact-delete> [friend]`                 | 删除联系人           |
+| `/<contact-delete> [contact]`                | 删除联系人           |
 | `/<group-nick> [name] [group]?`              | 设置群名片           |
 | `/<gc>`                                      | 主动触发 JVM GC      |
 | `/<random-image> [contact]?`                 | 随机发送一张图片     |
