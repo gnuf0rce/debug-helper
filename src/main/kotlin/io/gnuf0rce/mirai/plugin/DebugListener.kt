@@ -13,6 +13,7 @@ import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermis
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.data.RequestEventData.Factory.toRequestEventData
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.message.data.*
@@ -30,13 +31,11 @@ object DebugListener : SimpleListenerHost() {
 
     private val autoGroupAccept by DebugSetting::autoGroupAccept
 
+    private val autoMemberAccept by DebugSetting::autoMemberAccept
+
     private val autoSendStatus by DebugSetting::autoSendStatus
 
     private val onlineMessageSendDuration by DebugOnlineConfig::duration
-
-    private val friend by DebugRequestEventData::friend
-
-    private val group by DebugRequestEventData::group
 
     @OptIn(MiraiExperimentalApi::class)
     private fun online(bot: Bot, picture: String = bot.avatarUrl) = buildXmlMessage(1) {
@@ -82,7 +81,8 @@ object DebugListener : SimpleListenerHost() {
 
     @EventHandler
     suspend fun NewFriendRequestEvent.mark() {
-        if (autoFriendAccept) accept() else friend += toData()
+        if (autoFriendAccept) accept() else DebugRequestEventData += this
+        toRequestEventData()
         runCatching {
             bot.owner()?.sendMessage(buildMessageChain {
                 appendLine("@${fromNick}#${fromId} with <${eventId}>")
@@ -98,13 +98,29 @@ object DebugListener : SimpleListenerHost() {
 
     @EventHandler
     suspend fun BotInvitedJoinGroupRequestEvent.mark() {
-        if (autoGroupAccept) accept() else group += toData()
+        if (autoGroupAccept) accept() else DebugRequestEventData += this
         runCatching {
             bot.owner()?.sendMessage(buildMessageChain {
                 appendLine("@${invitorNick}#${invitorId} with <${eventId}>")
-                appendLine("申请添加群")
+                appendLine("邀请机器人加入群")
                 appendLine("to [$groupName](${groupId})")
                 if (autoGroupAccept) appendLine("已自动同意")
+            })
+        }.onFailure {
+            logger.warning { "发送消息失败，$it" }
+        }
+    }
+
+    @EventHandler
+    suspend fun MemberJoinRequestEvent.mark() {
+        if (autoMemberAccept) accept() else DebugRequestEventData += this
+        runCatching {
+            bot.owner()?.sendMessage(buildMessageChain {
+                appendLine("@${fromNick}#${fromId} with <${eventId}>")
+                appendLine("申请加入群")
+                appendLine("to [$groupName](${groupId}) by $invitorId")
+                appendLine(message)
+                if (autoMemberAccept) appendLine("已自动同意")
             })
         }.onFailure {
             logger.warning { "发送消息失败，$it" }

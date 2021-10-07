@@ -56,6 +56,7 @@ ID: `xyz.cssxsh.mirai.plugin.debug-helper:online.exclude`
 * owner 机器人所有者，同时也是好友申请和加群申请的联系人
 * auto_friend_request 自动同意好友请求
 * auto_group_request 自动同意加群请求
+* auto_member_accept 自动同意新成员请求
 * auto_send_status 自动发送机器人状态到所有者的间隔，单位为分钟，为零时不开启此项功能
 * random_image_api 随机图片API by <https://rainchan.win/projects/pximg>
 

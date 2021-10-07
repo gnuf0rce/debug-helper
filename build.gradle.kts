@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "1.5.21"
     kotlin("plugin.serialization") version "1.5.21"
 
-    id("net.mamoe.mirai-console") version "2.7.1"
+    id("net.mamoe.mirai-console") version "2.8.0-M1"
     id("net.mamoe.maven-central-publish") version "0.6.1"
 }
 

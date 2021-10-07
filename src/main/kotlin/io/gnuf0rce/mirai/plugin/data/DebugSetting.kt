@@ -16,6 +16,10 @@ object DebugSetting: ReadOnlyPluginConfig("DebugSetting") {
     @ValueDescription("自动同意加群请求")
     val autoGroupAccept by value(false)
 
+    @ValueName("auto_member_accept")
+    @ValueDescription("自动同意新成员请求")
+    val autoMemberAccept by value(false)
+
     @ValueName("auto_send_status")
     @ValueDescription("自动发送机器人状态到所有者的间隔，单位为分钟，为零时不开启此项功能")
     val autoSendStatus by value(60)

@@ -1,73 +1,85 @@
-@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@file:OptIn(MiraiInternalApi::class)
-
 package io.gnuf0rce.mirai.plugin.data
 
-import kotlinx.serialization.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.data.*
+import net.mamoe.mirai.console.data.PluginDataExtensions.mapKeys
+import net.mamoe.mirai.data.*
+import net.mamoe.mirai.data.RequestEventData.Factory.toRequestEventData
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.utils.*
 
 object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
 
-    val friend by value(mutableListOf<FriendRequestEventData>())
+    private val requests by value<MutableMap<Long, List<RequestEventData>>>().mapKeys(Bot::getInstance, Bot::id)
 
-    val group by value(mutableListOf<GroupRequestEventData>())
+    fun detail(): String = buildString {
+        for ((bot, list) in requests) {
+            if (list.isEmpty()) continue
+            appendLine("--- ${bot.nick} ${bot.id} ---")
+            for (request in list) {
+                appendLine(request)
+            }
+        }
+        if (isEmpty()) {
+            appendLine("没有记录")
+        }
+    }
+
+    private operator fun List<RequestEventData>.get(id: Long): RequestEventData? {
+        for (request in this) {
+            if (request.eventId == id) return request
+            when (request) {
+                is RequestEventData.NewFriendRequest -> {
+                    if (request.requester == id) return request
+                }
+                is RequestEventData.BotInvitedJoinGroupRequest -> {
+                    if (request.groupId == id) return request
+                    if (request.invitor == id) return request
+                }
+                is RequestEventData.MemberJoinRequest -> {
+                    if (request.invitor == id) return request
+                }
+            }
+        }
+        return null
+    }
+
+    suspend fun handle(id: Long, accept: Boolean, black: Boolean, message: String): RequestEventData? {
+        for ((bot, list) in requests) {
+            val request = list[id] ?: continue
+            if (accept) {
+                request.accept(bot)
+            } else {
+                when (request) {
+                    is RequestEventData.NewFriendRequest -> {
+                        request.reject(bot, black)
+                    }
+                    is RequestEventData.BotInvitedJoinGroupRequest -> {
+                        request.reject(bot)
+                    }
+                    is RequestEventData.MemberJoinRequest -> {
+                        request.reject(bot, black, message)
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    operator fun plusAssign(event: NewFriendRequestEvent) {
+        requests.compute(event.bot) { _, list ->
+            list.orEmpty() + event.toRequestEventData()
+        }
+    }
+
+    operator fun plusAssign(event: BotInvitedJoinGroupRequestEvent) {
+        requests.compute(event.bot) { _, list ->
+            list.orEmpty() + event.toRequestEventData()
+        }
+    }
+
+    operator fun plusAssign(event: MemberJoinRequestEvent) {
+        requests.compute(event.bot) { _, list ->
+            list.orEmpty() + event.toRequestEventData()
+        }
+    }
 }
-
-@Serializable
-data class FriendRequestEventData(
-    val bot: Long,
-    val eventId: Long,
-    val message: String,
-    val fromId: Long,
-    val fromGroupId: Long,
-    val fromNick: String
-)
-
-fun NewFriendRequestEvent.toData() = FriendRequestEventData(
-    bot.id,
-    eventId,
-    message,
-    fromId,
-    fromGroupId,
-    fromNick
-)
-
-fun FriendRequestEventData.toEvent() = NewFriendRequestEvent(
-    Bot.getInstance(bot),
-    eventId,
-    message,
-    fromId,
-    fromGroupId,
-    fromNick
-)
-
-@Serializable
-data class GroupRequestEventData(
-    val bot: Long,
-    val eventId: Long,
-    val invitorId: Long,
-    val groupId: Long,
-    val groupName: String,
-    val invitorNick: String
-)
-
-fun BotInvitedJoinGroupRequestEvent.toData() = GroupRequestEventData(
-    bot.id,
-    eventId,
-    invitorId,
-    groupId,
-    groupName,
-    invitorNick
-)
-
-fun GroupRequestEventData.toEvent() = BotInvitedJoinGroupRequestEvent(
-    Bot.getInstance(bot),
-    eventId,
-    invitorId,
-    groupId,
-    groupName,
-    invitorNick
-)

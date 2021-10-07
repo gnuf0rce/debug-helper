@@ -128,24 +128,11 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    private val friend by DebugRequestEventData::friend
-
-    private val group by DebugRequestEventData::group
-
     object RequestListCommand : SimpleCommand(owner = owner, "request", description = "申请列表") {
         @Handler
         suspend fun CommandSender.handle() {
             runCatching {
-                sendMessage(buildMessageChain {
-                    appendLine("Friend")
-                    appendLine(friend.joinToString("\n") {
-                        "Bot: ${it.bot}, EventId: ${it.eventId}, message: ${it.message}, QQ: @${it.fromNick}#${it.fromId}, Group: ${it.fromGroupId}"
-                    })
-                    appendLine("Group")
-                    appendLine(group.joinToString("\n") {
-                        "Bot: ${it.bot}, EventId: ${it.eventId}, QQ: @${it.invitorNick}#${it.invitorId}, Group: ${it.groupName}#${it.groupId}"
-                    })
-                })
+                sendMessage(DebugRequestEventData.detail())
             }.onFailure {
                 sendMessage("出现错误 $it")
             }
@@ -154,22 +141,15 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     object ContactRequestCommand : SimpleCommand(owner = owner, "contact-request", description = "接受联系人") {
         @Handler
-        suspend fun CommandSender.handle(id: Long, accept: Boolean = true, black: Boolean = false) {
+        suspend fun CommandSender.handle(
+            id: Long,
+            accept: Boolean = true,
+            black: Boolean = false,
+            message: String = ""
+        ) {
             runCatching {
-                val data = friend.find { it.eventId == id || it.fromId == id }?.apply {
-                    with(toEvent()) {
-                        if (accept) accept() else reject(black)
-                    }
-                    friend.removeIf { eventId == it.eventId || fromId == it.fromId }
-                    sendMessage("@${fromNick}#${fromId} 处理成功")
-                } ?: group.find { it.eventId == id || it.groupId == id }?.apply {
-                    with(toEvent()) {
-                        if (accept) accept() else ignore()
-                    }
-                    group.removeIf { eventId == it.eventId || groupId == it.groupId }
-                    sendMessage("@${invitorNick}#${invitorId} to ${groupName}#${groupId} 处理成功")
-                }
-                requireNotNull(data) { "找不到事件" }
+                val request = requireNotNull(DebugRequestEventData.handle(id, accept, black, message)) { "找不到事件" }
+                sendMessage("请求已处理 $request")
             }.onFailure {
                 sendMessage("出现错误 $it")
             }
