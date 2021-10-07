@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.github.gnuf0rce"
-version = "1.0.8"
+version = "1.0.9"
 
 mavenCentralPublish {
     useCentralS01()
@@ -20,7 +20,6 @@ mavenCentralPublish {
 
 repositories {
     mavenLocal()
-    maven(url = "https://maven.aliyun.com/repository/releases")
     maven(url = "https://maven.aliyun.com/repository/public")
     mavenCentral()
     maven(url = "https://maven.aliyun.com/repository/gradle-plugin")
