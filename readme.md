@@ -33,6 +33,7 @@
 | `/<gc>`                                      | 主动触发 JVM GC      |
 | `/<random-image> [contact]?`                 | 随机发送一张图片     |
 | `/<forward> [contact] [title]?`              | 转发消息，句号结束   |
+| `/<fork> [contact] {codes}`                  | 从mirai-code构造消息 |
 
 id 是事件id 或者 好友id 或者 群id  
 contact 和 at 这两个参数可以是 数字号码 也可以是 @XXX  

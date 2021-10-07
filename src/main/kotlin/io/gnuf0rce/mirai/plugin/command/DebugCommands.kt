@@ -18,6 +18,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.message.*
+import net.mamoe.mirai.message.code.*
 import java.io.InputStream
 
 @OptIn(ConsoleExperimentalApi::class)
@@ -239,6 +240,24 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                 contact.sendMessage(nodes.toForwardMessage(object : ForwardMessage.DisplayStrategy {
                     override fun generateTitle(forward: RawForwardMessage): String = title
                 }))
+            }.onFailure {
+                sendMessage("出现错误 $it")
+            }
+        }
+    }
+
+    object ForkCommand : SimpleCommand(owner = owner, "fork", description = "从mirai-code构造消息") {
+        @Handler
+        suspend fun CommandSenderOnMessage<*>.handle(contact: Contact, vararg codes: String) {
+            runCatching {
+                for (code in codes) {
+                    try {
+                        val message = MiraiCode.deserializeMiraiCode(code, fromEvent.subject)
+                        contact.sendMessage(message)
+                    } finally {
+                        logger.info { "$code 已处理" }
+                    }
+                }
             }.onFailure {
                 sendMessage("出现错误 $it")
             }
