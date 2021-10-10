@@ -193,13 +193,13 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
     object ImageCommand : SimpleCommand(owner = owner, "random-image", description = "随机发送一张图片") {
+        private val http = HttpClient(OkHttp)
+
         @Handler
         suspend fun CommandSender.handle(contact: Contact = subject as Contact) {
             runCatching {
-                HttpClient(OkHttp).use { http ->
-                    http.get<InputStream>(randomImageApi).use { input ->
-                        contact.sendImage(input)
-                    }
+                http.get<InputStream>(randomImageApi).use { input ->
+                    contact.sendImage(input)
                 }
             }.onFailure {
                 sendMessage("出现错误 $it")
