@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.github.gnuf0rce"
-version = "1.0.9"
+version = "1.1.0"
 
 mavenCentralPublish {
     useCentralS01()
@@ -28,6 +28,7 @@ repositories {
 
 dependencies {
     compileOnly("net.mamoe:mirai-core-jvm:2.7.1")
+    testImplementation(kotlin("test-junit5"))
 }
 
 kotlin {
@@ -37,5 +38,11 @@ kotlin {
 //            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalApi")
 //            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalApi")
         }
+    }
+}
+
+tasks {
+    test {
+        useJUnitPlatform()
     }
 }

@@ -9,10 +9,17 @@ import net.mamoe.mirai.event.events.*
 
 object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
 
-    private val requests by value<MutableMap<Long, List<RequestEventData>>>().mapKeys(Bot::getInstance, Bot::id)
+    private val friends by value<MutableMap<Long, List<RequestEventData.NewFriendRequest>>>()
+        .mapKeys(Bot::getInstance, Bot::id)
+
+    private val groups by value<MutableMap<Long, List<RequestEventData.BotInvitedJoinGroupRequest>>>()
+        .mapKeys(Bot::getInstance, Bot::id)
+
+    private val members by value<MutableMap<Long, List<RequestEventData.MemberJoinRequest>>>()
+        .mapKeys(Bot::getInstance, Bot::id)
 
     fun detail(): String = buildString {
-        for ((bot, list) in requests) {
+        for ((bot, list) in friends + groups + members) {
             if (list.isEmpty()) continue
             appendLine("--- ${bot.nick} ${bot.id} ---")
             for (request in list) {
@@ -44,7 +51,7 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
     }
 
     suspend fun handle(id: Long, accept: Boolean, black: Boolean, message: String): RequestEventData? {
-        for ((bot, list) in requests) {
+        for ((bot, list) in friends + groups + members) {
             val request = list[id] ?: continue
             if (accept) {
                 request.accept(bot)
@@ -66,19 +73,19 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
     }
 
     operator fun plusAssign(event: NewFriendRequestEvent) {
-        requests.compute(event.bot) { _, list ->
+        friends.compute(event.bot) { _, list ->
             list.orEmpty() + event.toRequestEventData()
         }
     }
 
     operator fun plusAssign(event: BotInvitedJoinGroupRequestEvent) {
-        requests.compute(event.bot) { _, list ->
+        groups.compute(event.bot) { _, list ->
             list.orEmpty() + event.toRequestEventData()
         }
     }
 
     operator fun plusAssign(event: MemberJoinRequestEvent) {
-        requests.compute(event.bot) { _, list ->
+        members.compute(event.bot) { _, list ->
             list.orEmpty() + event.toRequestEventData()
         }
     }
