@@ -29,7 +29,7 @@ object DebugHelperPlugin : KotlinPlugin(
         } else {
             logger.warning( "机器人所有者 未设置")
         }
-        logger.info("不发送上线通知请使用 /perm add g* xyz.cssxsh.mirai.plugin.debug-helper:online.exclude 赋予权限")
+        logger.info("发送上线通知请使用 /perm add g群号 xyz.cssxsh.mirai.plugin.debug-helper:online.include 赋予权限")
 
         DebugListener.registerTo(globalEventChannel())
     }

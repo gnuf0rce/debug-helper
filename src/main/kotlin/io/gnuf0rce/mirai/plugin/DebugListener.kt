@@ -75,8 +75,8 @@ object DebugListener : SimpleListenerHost() {
         return PermissionService.INSTANCE.register(permissionId(name), description, parentPermission)
     }
 
-    private val exclude by lazy {
-        DebugHelperPlugin.registerPermission("online.exclude", "不发送上线通知")
+    private val include by lazy {
+        DebugHelperPlugin.registerPermission("online.include", "发送上线通知")
     }
 
     @EventHandler
@@ -144,7 +144,7 @@ object DebugListener : SimpleListenerHost() {
                 }
             }
         }
-        bot.groups.filterNot { exclude.testPermission(it.permitteeId) }.forEach { group ->
+        bot.groups.filter { include.testPermission(it.permitteeId) }.forEach { group ->
             isActive && group.sendOnlineMessage(onlineMessageSendDuration * 1000L)
         }
     }
