@@ -42,7 +42,7 @@ contact 和 at 这两个参数可以是 数字号码 也可以是 @XXX
 
 ### Online Exclude
 
-ID: `xyz.cssxsh.mirai.plugin.debug-helper:online.include`
+ID: `xyz.cssxsh.mirai.plugin.debug-helper:online.include`  
 作用: 拥有此权限的群，会发送上线通知
 
 ## 配置
