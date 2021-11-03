@@ -3,6 +3,8 @@ package io.gnuf0rce.mirai.plugin.data
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.data.PluginDataExtensions.mapKeys
+import net.mamoe.mirai.console.util.*
+import net.mamoe.mirai.console.util.ContactUtils.render
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.data.RequestEventData.Factory.toRequestEventData
 import net.mamoe.mirai.event.events.*
@@ -18,10 +20,11 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
     private val members by value<MutableMap<Long, List<RequestEventData.MemberJoinRequest>>>()
         .mapKeys(Bot::getInstance, Bot::id)
 
+    @OptIn(ConsoleExperimentalApi::class)
     fun detail(): String = buildString {
         for ((bot, list) in friends + groups + members) {
             if (list.isEmpty()) continue
-            appendLine("--- ${bot.nick} ${bot.id} ---")
+            appendLine("--- ${bot.render()} ---")
             for (request in list) {
                 appendLine(request)
             }

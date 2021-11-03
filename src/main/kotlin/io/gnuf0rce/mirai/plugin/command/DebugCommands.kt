@@ -10,6 +10,7 @@ import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.util.*
+import net.mamoe.mirai.console.util.ContactUtils.render
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
@@ -97,10 +98,10 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         suspend fun CommandSender.handle() {
             runCatching {
                 sendMessage(buildMessageChain {
-                    Bot.instances.forEach { bot ->
-                        appendLine("--- ${bot.nick} ${bot.id} ---")
-                        bot.friends.forEach { friend ->
-                            appendLine("$friend -> <${friend.nick}>")
+                    for (bot in Bot.instances) {
+                        appendLine("--- ${bot.render()} ---")
+                        for (friend in bot.friends) {
+                            appendLine(friend.render())
                         }
                     }
                 })
@@ -115,10 +116,10 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         suspend fun CommandSender.handle() {
             runCatching {
                 sendMessage(buildMessageChain {
-                    Bot.instances.forEach { bot ->
-                        appendLine("--- ${bot.nick} ${bot.id} ---")
-                        bot.groups.forEach { group ->
-                            appendLine("(${group.id})[${group.botPermission}] -> <${group.name}>[${group.members.size}](${group.botMuteRemaining})")
+                    for (bot in Bot.instances) {
+                        appendLine("--- ${bot.render()} ---")
+                        for (group in bot.groups) {
+                            appendLine("${group.render()}[${group.botPermission}]<${group.members.size}>(${group.botMuteRemaining})")
                         }
                     }
                 })
