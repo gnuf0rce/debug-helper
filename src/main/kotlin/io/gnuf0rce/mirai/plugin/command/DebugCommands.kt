@@ -21,6 +21,7 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.code.*
+import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import java.io.InputStream
 
 @OptIn(ConsoleExperimentalApi::class)
@@ -87,8 +88,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle() {
             runCatching {
-                fromEvent.message.findIsInstance<QuoteReply>()?.source
-                    ?: DebugListener.records[fromEvent.subject.id]
+                DebugListener.records[fromEvent.subject.id]?.recall()
+                    ?: fromEvent.message.findIsInstance<QuoteReply>()?.recallSource()
             }.onSuccess {
                 if (it != null) {
                     sendMessage("...撤回成功")
