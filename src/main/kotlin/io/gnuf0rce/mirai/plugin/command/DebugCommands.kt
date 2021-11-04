@@ -87,9 +87,14 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle() {
             runCatching {
-                fromEvent.message.firstIsInstance<QuoteReply>().recallSource()
+                fromEvent.message.findIsInstance<QuoteReply>()?.source
+                    ?: DebugListener.records[fromEvent.subject.id]
             }.onSuccess {
-                sendMessage("...撤回成功")
+                if (it != null) {
+                    sendMessage("...撤回成功")
+                } else {
+                    sendMessage("未找到消息")
+                }
             }.onFailure {
                 sendMessage("出现错误 $it")
             }

@@ -127,6 +127,13 @@ object DebugListener : SimpleListenerHost() {
         }
     }
 
+    internal val records = mutableMapOf<Long, MessageSource>()
+
+    @EventHandler
+    fun MessageEvent.mark() {
+        records[subject.id] = message.source
+    }
+
     private var status = false
 
     @EventHandler
