@@ -25,9 +25,9 @@ object DebugHelperPlugin : KotlinPlugin(
         DebugCommands.registerAll()
 
         if (DebugSetting.owner != DebugSetting.OwnerDefault) {
-            logger.info( "机器人所有者 ${DebugSetting.owner}")
+            logger.info("机器人所有者 ${DebugSetting.owner}")
         } else {
-            logger.warning( "机器人所有者 未设置")
+            logger.warning("机器人所有者 未设置")
         }
         logger.info("发送上线通知请使用 /perm add g群号 xyz.cssxsh.mirai.plugin.debug-helper:online.include 赋予权限")
 
@@ -36,5 +36,6 @@ object DebugHelperPlugin : KotlinPlugin(
 
     override fun onDisable() {
         DebugListener.cancelAll()
+        DebugCommands.unregisterAll()
     }
 }

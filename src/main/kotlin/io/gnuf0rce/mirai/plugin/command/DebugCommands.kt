@@ -9,6 +9,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.console.util.ContactUtils.render
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
@@ -29,6 +30,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     private val all by lazy { this::class.nestedClasses.mapNotNull { it.objectInstance as? Command } }
 
     fun registerAll() = all.associateWith { it.register() }
+
+    fun unregisterAll() = all.associateWith { it.unregister() }
 
     private val owner: CommandOwner get() = DebugHelperPlugin
 
