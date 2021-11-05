@@ -5,6 +5,7 @@ import net.mamoe.mirai.console.data.*
 object DebugSetting: ReadOnlyPluginConfig("DebugSetting") {
     const val OwnerDefault = 12345L
 
+    @ValueName("owner")
     @ValueDescription("机器人所有者")
     val owner by value(OwnerDefault)
 
