@@ -2,7 +2,7 @@ package io.gnuf0rce.mirai.plugin.data
 
 import net.mamoe.mirai.console.data.*
 
-object DebugSetting: ReadOnlyPluginConfig("DebugSetting") {
+object DebugSetting : ReadOnlyPluginConfig("DebugSetting") {
     const val OwnerDefault = 12345L
 
     @ValueName("owner")
