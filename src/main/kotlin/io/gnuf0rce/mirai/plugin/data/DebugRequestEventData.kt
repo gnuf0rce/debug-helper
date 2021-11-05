@@ -46,6 +46,7 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
                     if (request.invitor == id) return request
                 }
                 is RequestEventData.MemberJoinRequest -> {
+                    if (request.requester == id) return request
                     if (request.invitor == id) return request
                 }
             }
