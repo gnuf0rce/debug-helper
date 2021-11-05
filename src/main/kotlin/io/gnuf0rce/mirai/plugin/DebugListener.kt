@@ -103,7 +103,7 @@ object DebugListener : SimpleListenerHost() {
             bot.owner()?.sendMessage(buildMessageChain {
                 appendLine("@${invitorNick}#${invitorId} with <${eventId}>")
                 appendLine("邀请机器人加入群")
-                appendLine("to [$groupName](${groupId})")
+                appendLine("to [${groupName}](${groupId})")
                 if (autoGroupAccept) appendLine("已自动同意")
             })
         }.onFailure {

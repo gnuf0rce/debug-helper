@@ -60,15 +60,9 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
                 request.accept(bot)
             } else {
                 when (request) {
-                    is RequestEventData.NewFriendRequest -> {
-                        request.reject(bot, black)
-                    }
-                    is RequestEventData.BotInvitedJoinGroupRequest -> {
-                        request.reject(bot)
-                    }
-                    is RequestEventData.MemberJoinRequest -> {
-                        request.reject(bot, black, message)
-                    }
+                    is RequestEventData.NewFriendRequest -> request.reject(bot, black)
+                    is RequestEventData.BotInvitedJoinGroupRequest -> request.reject(bot)
+                    is RequestEventData.MemberJoinRequest -> request.reject(bot, black, message)
                 }
             }
         }
