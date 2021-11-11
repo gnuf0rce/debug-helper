@@ -1,13 +1,13 @@
 plugins {
-    kotlin("jvm") version "1.5.21"
-    kotlin("plugin.serialization") version "1.5.21"
+    kotlin("jvm") version "1.5.31"
+    kotlin("plugin.serialization") version "1.5.31"
 
-    id("net.mamoe.mirai-console") version "2.8.0-M1"
+    id("net.mamoe.mirai-console") version "2.8.0"
     id("net.mamoe.maven-central-publish") version "0.6.1"
 }
 
 group = "io.github.gnuf0rce"
-version = "1.1.2"
+version = "1.1.3"
 
 mavenCentralPublish {
     useCentralS01()
