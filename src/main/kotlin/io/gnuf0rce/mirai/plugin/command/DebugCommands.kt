@@ -256,8 +256,44 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
             }
         }
     }
-}
 
+    object RegisteredCommand : SimpleCommand(owner = owner, "registered", description = "查看已注册指令") {
+        @Handler
+        suspend fun CommandSenderOnMessage<*>.handle() {
+            try {
+                val commands = CommandManagerImpl.allRegisteredCommands
+                val strategy = object : ForwardMessage.DisplayStrategy {
+                    override fun generateTitle(forward: RawForwardMessage): String {
+                        return "已注册指令"
+                    }
+
+                    override fun generateSummary(forward: RawForwardMessage): String {
+                        return "已注册${commands.size}条指令"
+                    }
+                }
+                val nodes = commands.map { command ->
+                    ForwardMessage.Node(
+                        time = (System.currentTimeMillis() / 1_000).toInt(),
+                        senderId = bot!!.id,
+                        senderName = command.owner.parentPermission.id.namespace,
+                        message = buildMessageChain {
+                            appendLine("Id: ${command.permission.id}")
+                            appendLine("HasPermission: ${hasPermission(command.permission)}")
+                            appendLine("Description: ${command.description}")
+                            appendLine(command.usage)
+                        }
+                    )
+                }
+
+                val forward = RawForwardMessage(nodes).render(strategy)
+                sendMessage(forward + IgnoreLengthCheck)
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
+            }
+        }
+    }
+
+}
 
 
 
