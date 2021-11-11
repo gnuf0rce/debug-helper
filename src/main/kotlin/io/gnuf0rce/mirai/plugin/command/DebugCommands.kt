@@ -10,6 +10,8 @@ import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
+import net.mamoe.mirai.console.internal.command.*
+import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
 import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.console.util.ContactUtils.render
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
@@ -51,11 +53,11 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     object SendAllCommand : SimpleCommand(owner = owner, "send-groups", description = "预告") {
         @Handler
         suspend fun CommandSender.handle(text: String, atAll: Boolean = false) {
-            runCatching {
+            try {
                 val message = if (atAll) AtAll + text + ForceAsLongMessage else text.toPlainText()
                 Bot.instances.flatMap(Bot::groups).sendMessage(message)
-            }.onFailure {
-                sendMessage("'${text}'发送失败, $it")
+            } catch (e: Throwable) {
+                sendMessage("'${text}'发送失败, $e")
             }
         }
     }
@@ -63,11 +65,11 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     object AtAllCommand : SimpleCommand(owner = owner, "at-all", description = "预告") {
         @Handler
         suspend fun CommandSender.handle(text: String, group: Group = subject as Group) {
-            runCatching {
+            try {
                 val message = AtAll + text + ForceAsLongMessage
                 group.sendMessage(message)
-            }.onFailure {
-                sendMessage("'${text}'发送失败, $it")
+            } catch (e: Throwable) {
+                sendMessage("'${text}'发送失败, $e")
             }
         }
     }
@@ -75,11 +77,11 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     object SendCommand : SimpleCommand(owner = owner, "send", description = "发送消息") {
         @Handler
         suspend fun CommandSender.handle(contact: Contact, text: String, at: User? = null) {
-            runCatching {
+            try {
                 val message: Message = if (at != null) At(at) + text else text.toPlainText()
                 contact.sendMessage(message)
-            }.onFailure {
-                sendMessage("'${text}'发送失败, $it")
+            } catch (e: Throwable) {
+                sendMessage("'${text}'发送失败, $e")
             }
         }
     }
@@ -87,17 +89,16 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     object RecallCommand : SimpleCommand(owner = owner, "recall", description = "撤回消息") {
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle() {
-            runCatching {
-                DebugListener.records[fromEvent.subject.id]?.recall()
+            try {
+                val u = DebugListener.records[fromEvent.subject.id]?.recall()
                     ?: fromEvent.message.findIsInstance<QuoteReply>()?.recallSource()
-            }.onSuccess {
-                if (it != null) {
+                if (u != null) {
                     sendMessage("...撤回成功")
                 } else {
                     sendMessage("未找到消息")
                 }
-            }.onFailure {
-                sendMessage("出现错误 $it")
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
             }
         }
     }
@@ -105,7 +106,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     object FriendCommand : SimpleCommand(owner = owner, "friend", description = "查看当前的好友") {
         @Handler
         suspend fun CommandSender.handle() {
-            runCatching {
+            try {
                 sendMessage(buildMessageChain {
                     for (bot in Bot.instances) {
                         appendLine("--- ${bot.render()} ---")
@@ -114,8 +115,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                         }
                     }
                 })
-            }.onFailure {
-                sendMessage("出现错误 $it")
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
             }
         }
     }
@@ -123,7 +124,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     object GroupCommand : SimpleCommand(owner = owner, "group", description = "查看当前的群组") {
         @Handler
         suspend fun CommandSender.handle() {
-            runCatching {
+            try {
                 sendMessage(buildMessageChain {
                     for (bot in Bot.instances) {
                         appendLine("--- ${bot.render()} ---")
@@ -132,8 +133,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                         }
                     }
                 })
-            }.onFailure {
-                sendMessage("出现错误 $it")
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
             }
         }
     }
@@ -141,10 +142,10 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     object RequestListCommand : SimpleCommand(owner = owner, "request", description = "申请列表") {
         @Handler
         suspend fun CommandSender.handle() {
-            runCatching {
+            try {
                 sendMessage(DebugRequestEventData.detail())
-            }.onFailure {
-                sendMessage("出现错误 $it")
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
             }
         }
     }
@@ -157,11 +158,11 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
             black: Boolean = false,
             message: String = ""
         ) {
-            runCatching {
+            try {
                 val request = requireNotNull(DebugRequestEventData.handle(id, accept, black, message)) { "找不到事件" }
                 sendMessage("请求已处理 $request")
-            }.onFailure {
-                sendMessage("出现错误 $it")
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
             }
         }
     }
@@ -169,14 +170,17 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     object FriendDeleteCommand : SimpleCommand(owner = owner, "contact-delete", description = "删除联系人") {
         @Handler
         suspend fun CommandSender.handle(contact: Contact) {
-            runCatching {
-                (contact as? Friend)?.delete()
-                (contact as? Group)?.quit()
-                (contact as? Stranger)?.delete()
-            }.onSuccess {
-                sendMessage("处理成功")
-            }.onFailure {
-                sendMessage("出现错误 $it")
+            try {
+                val r = (contact as? Friend)?.delete()
+                    ?: (contact as? Group)?.quit()
+                    ?: (contact as? Stranger)?.delete()
+                if (r != null) {
+                    sendMessage("处理成功")
+                } else {
+                    sendMessage("未找到联系人")
+                }
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
             }
         }
     }
@@ -184,12 +188,11 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     object GroupNickCommand : SimpleCommand(owner = owner, "group-nick", description = "群昵称") {
         @Handler
         suspend fun CommandSender.handle(name: String, group: Group = subject as Group) {
-            runCatching {
+            try {
                 group.botAsMember.nameCard = name
-            }.onSuccess {
                 sendMessage("处理成功")
-            }.onFailure {
-                sendMessage("出现错误 $it")
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
             }
         }
     }
@@ -207,12 +210,12 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
         @Handler
         suspend fun CommandSender.handle(contact: Contact = subject as Contact) {
-            runCatching {
+            try {
                 http.get<InputStream>(randomImageApi).use { input ->
                     contact.sendImage(input)
                 }
-            }.onFailure {
-                sendMessage("出现错误 $it")
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
             }
         }
     }
@@ -220,7 +223,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     object ForwardCommand : SimpleCommand(owner = owner, "forward", description = "转发") {
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle(contact: Contact, title: String = "转发测试") {
-            runCatching {
+            try {
                 val nodes = mutableListOf<MessageEvent>()
                 while (isActive && nodes.size <= 200) {
                     val message = fromEvent.nextMessage { nodes.add(it) }.contentToString()
@@ -230,8 +233,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                 contact.sendMessage(nodes.toForwardMessage(object : ForwardMessage.DisplayStrategy {
                     override fun generateTitle(forward: RawForwardMessage): String = title
                 }))
-            }.onFailure {
-                sendMessage("出现错误 $it")
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
             }
         }
     }
@@ -239,7 +242,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     object ForkCommand : SimpleCommand(owner = owner, "fork", description = "从mirai-code构造消息") {
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle(contact: Contact, vararg codes: String) {
-            runCatching {
+            try {
                 for (code in codes) {
                     try {
                         val message = MiraiCode.deserializeMiraiCode(code, fromEvent.subject)
@@ -248,8 +251,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                         logger.info { "$code 已处理" }
                     }
                 }
-            }.onFailure {
-                sendMessage("出现错误 $it")
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
             }
         }
     }

@@ -82,8 +82,7 @@ object DebugListener : SimpleListenerHost() {
     @EventHandler
     suspend fun NewFriendRequestEvent.mark() {
         if (autoFriendAccept) accept() else DebugRequestEventData += this
-        toRequestEventData()
-        runCatching {
+        try {
             bot.owner()?.sendMessage(buildMessageChain {
                 appendLine("@${fromNick}#${fromId} with <${eventId}>")
                 appendLine("申请添加好友")
@@ -91,30 +90,30 @@ object DebugListener : SimpleListenerHost() {
                 appendLine(message)
                 if (autoFriendAccept) appendLine("已自动同意")
             })
-        }.onFailure {
-            logger.warning { "发送消息失败，$it" }
+        } catch (e: Throwable) {
+            logger.warning { "发送消息失败，$e" }
         }
     }
 
     @EventHandler
     suspend fun BotInvitedJoinGroupRequestEvent.mark() {
         if (autoGroupAccept) accept() else DebugRequestEventData += this
-        runCatching {
+        try {
             bot.owner()?.sendMessage(buildMessageChain {
                 appendLine("@${invitorNick}#${invitorId} with <${eventId}>")
                 appendLine("邀请机器人加入群")
                 appendLine("to [${groupName}](${groupId})")
                 if (autoGroupAccept) appendLine("已自动同意")
             })
-        }.onFailure {
-            logger.warning { "发送消息失败，$it" }
+        } catch (e: Throwable) {
+            logger.warning { "发送消息失败，$e" }
         }
     }
 
     @EventHandler
     suspend fun MemberJoinRequestEvent.mark() {
         if (autoMemberAccept) accept() else DebugRequestEventData += this
-        runCatching {
+        try {
             bot.owner()?.sendMessage(buildMessageChain {
                 appendLine("@${fromNick}#${fromId} with <${eventId}>")
                 appendLine("申请加入群")
@@ -122,8 +121,8 @@ object DebugListener : SimpleListenerHost() {
                 appendLine(message)
                 if (autoMemberAccept) appendLine("已自动同意")
             })
-        }.onFailure {
-            logger.warning { "发送消息失败，$it" }
+        } catch (e: Throwable) {
+            logger.warning { "发送消息失败，$e" }
         }
     }
 
