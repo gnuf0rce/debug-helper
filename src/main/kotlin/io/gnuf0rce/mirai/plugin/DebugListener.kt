@@ -13,7 +13,6 @@ import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermis
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.RequestEventData.Factory.toRequestEventData
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.message.data.*
@@ -24,6 +23,8 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 object DebugListener : SimpleListenerHost() {
 
     private val logger by DebugHelperPlugin::logger
+
+    private val http = HttpClient(OkHttp)
 
     private fun Bot.owner() = getFriend(DebugSetting.owner)
 
@@ -60,7 +61,7 @@ object DebugListener : SimpleListenerHost() {
         delay(millis)
         return runCatching {
             val avatar = avatars.getOrPut(bot.id) {
-                HttpClient(OkHttp).use { it.get<ByteArray>(bot.avatarUrl) }.toExternalResource()
+                http.use { it.get<ByteArray>(bot.avatarUrl) }.toExternalResource()
             }
             val image = uploadImage(resource = avatar)
             sendMessage(message = online(bot = bot, picture = image.queryUrl()))
@@ -128,9 +129,65 @@ object DebugListener : SimpleListenerHost() {
 
     internal val records = mutableMapOf<Long, MessageSource>()
 
+    @OptIn(MiraiExperimentalApi::class)
+    private val keys = listOf(FlashImage, Audio, RichMessage)
+
+    private fun download(message: MessageChain) = DebugHelperPlugin.launch {
+        when (val target = keys.firstNotNullOfOrNull { key -> message[key] } ?: return@launch) {
+            is FlashImage -> {
+                try {
+                    DebugHelperPlugin.dataFolder.resolve("flash")
+                        .resolve(target.image.serializeToMiraiCode())
+                        .apply {
+                            if (exists().not()) {
+                                parentFile.mkdirs()
+                                writeBytes(http.get(target.image.queryUrl()))
+                            }
+                        }
+                } catch (e: Throwable) {
+                    logger.warning { "$target 下载失败, $e" }
+                }
+            }
+            is Audio -> {
+                try {
+                    DebugHelperPlugin.dataFolder.resolve("audio")
+                        .resolve(target.filename)
+                        .apply {
+                            if (exists().not()) {
+                                parentFile.mkdirs()
+                                writeBytes(http.get((target as OnlineAudio).urlForDownload))
+                            }
+                        }
+                } catch (e: Throwable) {
+                    logger.warning { "$target 下载失败, $e" }
+                }
+            }
+            is RichMessage -> {
+                try {
+                    DebugHelperPlugin.dataFolder.resolve("service")
+                        .resolve("${message.source.time}.rich")
+                        .apply {
+                            if (exists().not()) {
+                                parentFile.mkdirs()
+                                writeText(target.content)
+                            }
+                        }
+                } catch (e: Throwable) {
+                    logger.warning { "$target 下载失败, $e" }
+                }
+            }
+            else -> {
+                logger.warning { "Not Found Save Method." }
+            }
+        }
+    }
+
     @EventHandler
     fun MessageEvent.mark() {
         records[subject.id] = message.source
+        if (DebugSetting.autoDownloadMessage) {
+            download(message)
+        }
     }
 
     private var status = false
