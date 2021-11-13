@@ -137,7 +137,7 @@ object DebugListener : SimpleListenerHost() {
             is FlashImage -> {
                 try {
                     DebugHelperPlugin.dataFolder.resolve("flash")
-                        .resolve(target.image.serializeToMiraiCode())
+                        .resolve(target.image.imageId)
                         .apply {
                             if (exists().not()) {
                                 parentFile.mkdirs()
