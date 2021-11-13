@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.github.gnuf0rce"
-version = "1.1.3"
+version = "1.1.4"
 
 mavenCentralPublish {
     useCentralS01()
@@ -27,8 +27,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly("net.mamoe:mirai-core-jvm:2.7.1")
-    testImplementation(kotlin("test-junit5"))
+    compileOnly("net.mamoe:mirai-core-jvm:2.8.0")
+    testImplementation(kotlin("test", "1.5.31"))
 }
 
 kotlin {
