@@ -257,6 +257,30 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
+    object RichCommand : SimpleCommand(owner = owner, "rich", description = "构造卡片消息") {
+        private val SERVICE_ID = """(?<=serviceID=")\d+""".toRegex(RegexOption.IGNORE_CASE)
+
+        @Handler
+        suspend fun CommandSenderOnMessage<*>.handle(content: String) {
+            try {
+                @OptIn(MiraiExperimentalApi::class)
+                val rich = when (content[0]) {
+                    '{' -> {
+                        LightApp(content = content)
+                    }
+                    '<' -> {
+                        val serviceId = requireNotNull(SERVICE_ID.find(content)) { "Not serviceID" }.value.toInt()
+                        SimpleServiceMessage(serviceId = serviceId, content = content)
+                    }
+                    else -> throw IllegalArgumentException("Not is json or xml.")
+                }
+                sendMessage(rich)
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
+            }
+        }
+    }
+
     object RegisteredCommand : SimpleCommand(owner = owner, "registered", description = "查看已注册指令") {
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle() {

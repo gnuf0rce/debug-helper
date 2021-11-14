@@ -34,6 +34,7 @@
 | `/<random-image> [contact]?`                 | 随机发送一张图片     |
 | `/<forward> [contact] [title]?`              | 转发消息，句号结束   |
 | `/<fork> [contact] {codes}`                  | 从mirai-code构造消息 |
+| `/<rich> [content]`                          | 构造卡片消息         |
 | `/<registered>`                              | 查看已注册指令       |
 
 id 是事件id 或者 好友id 或者 群id  
