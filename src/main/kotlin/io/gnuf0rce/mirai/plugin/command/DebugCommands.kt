@@ -264,7 +264,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         suspend fun CommandSenderOnMessage<*>.handle(content: String) {
             try {
                 @OptIn(MiraiExperimentalApi::class)
-                val rich = when (content[0]) {
+                val rich = when (val char = content.first { it.isWhitespace().not() }) {
                     '{' -> {
                         val json = with(fromEvent.message.content) { substring(indexOf('{'), length) }
                         LightApp(content = json)
@@ -274,7 +274,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                         val serviceId = requireNotNull(SERVICE_ID.find(content)) { "Not serviceID" }.value.toInt()
                         SimpleServiceMessage(serviceId = serviceId, content = json)
                     }
-                    else -> throw IllegalArgumentException("Not is json or xml.")
+                    else -> throw IllegalArgumentException("Not is json or xml with \\x${char.code.toString(16)}")
                 }
                 sendMessage(rich)
             } catch (e: Throwable) {
