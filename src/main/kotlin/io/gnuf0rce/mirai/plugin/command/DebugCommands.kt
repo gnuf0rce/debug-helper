@@ -279,6 +279,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                 sendMessage(rich)
             } catch (e: Throwable) {
                 sendMessage("出现错误 $e")
+            } finally {
+                logger.warning { "卡片消息处理完成" }
             }
         }
     }
@@ -320,7 +322,3 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
 }
-
-
-
-
