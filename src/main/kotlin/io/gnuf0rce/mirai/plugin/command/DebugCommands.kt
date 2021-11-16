@@ -266,11 +266,13 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                 @OptIn(MiraiExperimentalApi::class)
                 val rich = when (content[0]) {
                     '{' -> {
-                        LightApp(content = content)
+                        val json = with(fromEvent.message.content) { substring(indexOf('{'), length) }
+                        LightApp(content = json)
                     }
                     '<' -> {
+                        val json = with(fromEvent.message.content) { substring(indexOf('<'), length) }
                         val serviceId = requireNotNull(SERVICE_ID.find(content)) { "Not serviceID" }.value.toInt()
-                        SimpleServiceMessage(serviceId = serviceId, content = content)
+                        SimpleServiceMessage(serviceId = serviceId, content = json)
                     }
                     else -> throw IllegalArgumentException("Not is json or xml.")
                 }
