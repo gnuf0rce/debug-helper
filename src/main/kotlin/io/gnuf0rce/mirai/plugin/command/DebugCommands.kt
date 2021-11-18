@@ -30,7 +30,7 @@ import java.io.InputStream
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
 object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
 
-    private val all by lazy { this::class.nestedClasses.mapNotNull { it.objectInstance as? Command } }
+    private val all: List<Command> by lazy { this::class.nestedClasses.mapNotNull { it.objectInstance as? Command } }
 
     fun registerAll() = all.associateWith { it.register() }
 

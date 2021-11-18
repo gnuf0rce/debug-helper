@@ -2,7 +2,6 @@ package io.gnuf0rce.mirai.plugin.data
 
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.data.*
-import net.mamoe.mirai.console.data.PluginDataExtensions.mapKeys
 import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.console.util.ContactUtils.render
 import net.mamoe.mirai.data.*
@@ -12,22 +11,19 @@ import net.mamoe.mirai.event.events.*
 object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
 
     private val friends by value<MutableMap<Long, List<RequestEventData.NewFriendRequest>>>()
-        .mapKeys(Bot::getInstance, Bot::id)
 
     private val groups by value<MutableMap<Long, List<RequestEventData.BotInvitedJoinGroupRequest>>>()
-        .mapKeys(Bot::getInstance, Bot::id)
 
     private val members by value<MutableMap<Long, List<RequestEventData.MemberJoinRequest>>>()
-        .mapKeys(Bot::getInstance, Bot::id)
 
-    private fun requests() = object : Iterator<Map.Entry<Bot, List<RequestEventData>>> {
+    private fun requests() = object : Iterator<Map.Entry<Long, List<RequestEventData>>> {
         private val friend = friends.iterator()
         private val group = groups.iterator()
         private val member = members.iterator()
 
         override fun hasNext(): Boolean = friend.hasNext() || group.hasNext() || member.hasNext()
 
-        override fun next(): Map.Entry<Bot, List<RequestEventData>> {
+        override fun next(): Map.Entry<Long, List<RequestEventData>> {
             if (friend.hasNext()) return friend.next()
             if (group.hasNext()) return group.next()
             if (member.hasNext()) return member.next()
@@ -37,8 +33,9 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
 
     @OptIn(ConsoleExperimentalApi::class)
     fun detail(): String = buildString {
-        for ((bot, list) in requests()) {
+        for ((qq, list) in requests()) {
             if (list.isEmpty()) continue
+            val bot = Bot.getInstance(qq)
             appendLine("--- ${bot.render()} ---")
             for (request in list) {
                 appendLine(request)
@@ -70,8 +67,9 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
     }
 
     suspend fun handle(id: Long, accept: Boolean, black: Boolean, message: String): RequestEventData? {
-        for ((bot, list) in requests()) {
+        for ((qq, list) in requests()) {
             val request = list[id] ?: continue
+            val bot = Bot.getInstance(qq)
             if (accept) {
                 request.accept(bot)
             } else {
@@ -86,19 +84,19 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
     }
 
     operator fun plusAssign(event: NewFriendRequestEvent) {
-        friends.compute(event.bot) { _, list ->
+        friends.compute(event.bot.id) { _, list ->
             list.orEmpty() + event.toRequestEventData()
         }
     }
 
     operator fun plusAssign(event: BotInvitedJoinGroupRequestEvent) {
-        groups.compute(event.bot) { _, list ->
+        groups.compute(event.bot.id) { _, list ->
             list.orEmpty() + event.toRequestEventData()
         }
     }
 
     operator fun plusAssign(event: MemberJoinRequestEvent) {
-        members.compute(event.bot) { _, list ->
+        members.compute(event.bot.id) { _, list ->
             list.orEmpty() + event.toRequestEventData()
         }
     }
