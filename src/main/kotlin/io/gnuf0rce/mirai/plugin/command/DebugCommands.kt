@@ -258,7 +258,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
     object RichCommand : SimpleCommand(owner = owner, "rich", description = "构造卡片消息") {
-        private val SERVICE_ID = """(?<=serviceID=")\d+""".toRegex(RegexOption.IGNORE_CASE)
+        private val SERVICE_ID = """(?<=serviceID=")\d+"""
+            .toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
 
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle(content: String) {
@@ -270,9 +271,9 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                         LightApp(content = json)
                     }
                     '<' -> {
-                        val json = with(fromEvent.message.content) { substring(indexOf('<'), length) }
-                        val serviceId = requireNotNull(SERVICE_ID.find(content)) { "Not serviceID" }.value.toInt()
-                        SimpleServiceMessage(serviceId = serviceId, content = json)
+                        val xml = with(fromEvent.message.content) { substring(indexOf('<'), length) }
+                        val serviceId = requireNotNull(SERVICE_ID.find(xml)) { "Not serviceID" }.value.toInt()
+                        SimpleServiceMessage(serviceId = serviceId, content = xml)
                     }
                     else -> throw IllegalArgumentException("Not is json or xml with \\x${char.code.toString(16)}")
                 }
@@ -280,7 +281,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
             } catch (e: Throwable) {
                 sendMessage("出现错误 $e")
             } finally {
-                logger.warning { "卡片消息处理完成" }
+                logger.info { "卡片消息处理完成" }
             }
         }
     }
