@@ -137,6 +137,7 @@ object DebugListener : SimpleListenerHost() {
             is FlashImage -> {
                 try {
                     DebugHelperPlugin.dataFolder.resolve("flash")
+                        .resolve("${message.source.fromId}")
                         .resolve(target.image.imageId)
                         .apply {
                             if (exists().not()) {
@@ -151,6 +152,7 @@ object DebugListener : SimpleListenerHost() {
             is Audio -> {
                 try {
                     DebugHelperPlugin.dataFolder.resolve("audio")
+                        .resolve("${message.source.fromId}")
                         .resolve(target.filename)
                         .apply {
                             if (exists().not()) {
@@ -164,8 +166,14 @@ object DebugListener : SimpleListenerHost() {
             }
             is RichMessage -> {
                 try {
+                    val format = when (target.content[0]){
+                        '<' -> "xml"
+                        '{' -> "json"
+                        else -> "rich"
+                    }
                     DebugHelperPlugin.dataFolder.resolve("service")
-                        .resolve("${message.source.time}.rich")
+                        .resolve("${message.source.fromId}")
+                        .resolve("${message.source.time}.${format}")
                         .apply {
                             if (exists().not()) {
                                 parentFile.mkdirs()
