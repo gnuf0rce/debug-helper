@@ -95,6 +95,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                         .find { it.fromId != fromEvent.source.fromId }
                 if (source != null) {
                     source.recall()
+                    DebugListener.records.getValue(fromEvent.subject.id).remove(source)
                     sendMessage("...撤回成功")
                 } else {
                     sendMessage("未找到消息")
