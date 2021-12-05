@@ -90,9 +90,11 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle() {
             try {
-                val u = DebugListener.records[fromEvent.subject.id]?.recall()
-                    ?: fromEvent.message.findIsInstance<QuoteReply>()?.recallSource()
-                if (u != null) {
+                val source = fromEvent.message.findIsInstance<QuoteReply>()?.source
+                    ?: DebugListener.records.getValue(fromEvent.subject.id)
+                        .find { it.fromId != fromEvent.source.fromId }
+                if (source != null) {
+                    source.recall()
                     sendMessage("...撤回成功")
                 } else {
                     sendMessage("未找到消息")

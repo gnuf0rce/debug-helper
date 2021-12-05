@@ -130,7 +130,7 @@ object DebugListener : SimpleListenerHost() {
         }
     }
 
-    internal val records = mutableMapOf<Long, MessageSource>()
+    internal val records = mutableMapOf<Long, MutableList<MessageSource>>().withDefault { mutableListOf() }
 
     @OptIn(MiraiExperimentalApi::class)
     private val keys = listOf(FlashImage, OnlineAudio, RichMessage)
@@ -189,7 +189,7 @@ object DebugListener : SimpleListenerHost() {
 
     @EventHandler
     fun MessageEvent.mark() {
-        records[subject.id] = message.source
+        records.getValue(subject.id).add(source)
         if (DebugSetting.autoDownloadMessage) {
             download(message)
         }
