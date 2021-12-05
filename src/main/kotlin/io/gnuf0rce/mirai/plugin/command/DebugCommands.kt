@@ -92,7 +92,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
             try {
                 val source = fromEvent.message.findIsInstance<QuoteReply>()?.source
                     ?: DebugListener.records.getValue(fromEvent.subject.id)
-                        .find { it.fromId != fromEvent.source.fromId }
+                        .findLast { it.fromId != fromEvent.source.fromId }
                 if (source != null) {
                     source.recall()
                     DebugListener.records.getValue(fromEvent.subject.id).remove(source)
