@@ -26,7 +26,10 @@ object DebugListener : SimpleListenerHost() {
 
     private val http = HttpClient(OkHttp)
 
-    private fun Bot.owner() = getFriend(DebugSetting.owner)
+    /**
+     * @see [Bot.getFriendOrFail]
+     */
+    private fun Bot.owner() = getFriendOrFail(DebugSetting.owner)
 
     private val autoFriendAccept by DebugSetting::autoFriendAccept
 
@@ -84,7 +87,7 @@ object DebugListener : SimpleListenerHost() {
     suspend fun NewFriendRequestEvent.mark() {
         if (autoFriendAccept) accept() else DebugRequestEventData += this
         try {
-            bot.owner()?.sendMessage(buildMessageChain {
+            bot.owner().sendMessage(buildMessageChain {
                 appendLine("@${fromNick}#${fromId} with <${eventId}>")
                 appendLine("申请添加好友")
                 appendLine("from $fromGroup")
@@ -100,7 +103,7 @@ object DebugListener : SimpleListenerHost() {
     suspend fun BotInvitedJoinGroupRequestEvent.mark() {
         if (autoGroupAccept) accept() else DebugRequestEventData += this
         try {
-            bot.owner()?.sendMessage(buildMessageChain {
+            bot.owner().sendMessage(buildMessageChain {
                 appendLine("@${invitorNick}#${invitorId} with <${eventId}>")
                 appendLine("邀请机器人加入群")
                 appendLine("to [${groupName}](${groupId})")
@@ -115,7 +118,7 @@ object DebugListener : SimpleListenerHost() {
     suspend fun MemberJoinRequestEvent.mark() {
         if (autoMemberAccept) accept() else DebugRequestEventData += this
         try {
-            bot.owner()?.sendMessage(buildMessageChain {
+            bot.owner().sendMessage(buildMessageChain {
                 appendLine("@${fromNick}#${fromId} with <${eventId}>")
                 appendLine("申请加入群")
                 appendLine("to [$groupName](${groupId}) by $invitorId")
@@ -207,7 +210,7 @@ object DebugListener : SimpleListenerHost() {
                 status = true
                 while (isActive) {
                     BuiltInCommands.StatusCommand.runCatching {
-                        bot.owner()?.asCommandSender()?.handle()
+                        bot.owner().asCommandSender().handle()
                     }.onFailure {
                         logger.warning({ "发送状态消息失败" }, it)
                     }
