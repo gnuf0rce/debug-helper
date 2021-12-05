@@ -133,7 +133,7 @@ object DebugListener : SimpleListenerHost() {
     internal val records = mutableMapOf<Long, MessageSource>()
 
     @OptIn(MiraiExperimentalApi::class)
-    private val keys = listOf(FlashImage, Audio, RichMessage)
+    private val keys = listOf(FlashImage, OnlineAudio, RichMessage)
 
     private fun download(message: MessageChain) = DebugHelperPlugin.launch {
         when (val target = keys.firstNotNullOfOrNull { key -> message[key] } ?: return@launch) {
@@ -143,25 +143,21 @@ object DebugListener : SimpleListenerHost() {
                         .resolve("${message.source.fromId}")
                         .resolve(target.image.imageId)
                         .apply {
-                            if (exists().not()) {
-                                parentFile.mkdirs()
-                                writeBytes(http.get(target.image.queryUrl()))
-                            }
+                            parentFile.mkdirs()
+                            writeBytes(http.get(target.image.queryUrl()))
                         }
                 } catch (e: Throwable) {
                     logger.warning { "$target 下载失败, $e" }
                 }
             }
-            is Audio -> {
+            is OnlineAudio -> {
                 try {
                     DebugHelperPlugin.dataFolder.resolve("audio")
                         .resolve("${message.source.fromId}")
                         .resolve(target.filename)
                         .apply {
-                            if (exists().not()) {
-                                parentFile.mkdirs()
-                                writeBytes(http.get((target as OnlineAudio).urlForDownload))
-                            }
+                            parentFile.mkdirs()
+                            writeBytes(http.get(target.urlForDownload))
                         }
                 } catch (e: Throwable) {
                     logger.warning { "$target 下载失败, $e" }
@@ -178,10 +174,8 @@ object DebugListener : SimpleListenerHost() {
                         .resolve("${message.source.fromId}")
                         .resolve("${message.source.time}.${format}")
                         .apply {
-                            if (exists().not()) {
-                                parentFile.mkdirs()
-                                writeText(target.content)
-                            }
+                            parentFile.mkdirs()
+                            writeText(target.content)
                         }
                 } catch (e: Throwable) {
                     logger.warning { "$target 下载失败, $e" }
