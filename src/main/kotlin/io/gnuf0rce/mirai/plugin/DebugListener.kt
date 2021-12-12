@@ -195,6 +195,11 @@ object DebugListener : SimpleListenerHost() {
         }
     }
 
+    @EventHandler
+    fun MessagePostSendEvent<*>.mark() {
+        records.getValue(target.id).add(source ?: return)
+    }
+
     private var status = false
 
     @EventHandler
