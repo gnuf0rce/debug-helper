@@ -100,4 +100,22 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
             list.orEmpty() + event.toRequestEventData()
         }
     }
+
+    operator fun minusAssign(event: FriendAddEvent) {
+        friends.compute(event.bot.id) { _, list ->
+            list.orEmpty().filterNot { it.requester == event.friend.id }
+        }
+    }
+
+    operator fun minusAssign(event: BotJoinGroupEvent) {
+        groups.compute(event.bot.id) { _, list ->
+            list.orEmpty().filterNot { it.groupId == event.group.id }
+        }
+    }
+
+    operator fun minusAssign(event: MemberJoinRequestEvent) {
+        groups.compute(event.bot.id) { _, list ->
+            list.orEmpty().filterNot { it.groupId == event.groupId && it.invitor == event.invitorId }
+        }
+    }
 }

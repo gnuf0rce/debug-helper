@@ -12,6 +12,8 @@ import net.mamoe.mirai.console.permission.*
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.console.plugin.jvm.*
+import net.mamoe.mirai.console.util.*
+import net.mamoe.mirai.console.util.ContactUtils.render
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.*
@@ -20,6 +22,7 @@ import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 
+@OptIn(MiraiExperimentalApi::class)
 object DebugListener : SimpleListenerHost() {
 
     private val logger by DebugHelperPlugin::logger
@@ -44,7 +47,6 @@ object DebugListener : SimpleListenerHost() {
 
     private val onlineMessageSendDuration by DebugOnlineConfig::duration
 
-    @OptIn(MiraiExperimentalApi::class)
     private fun online(bot: Bot, picture: String = bot.avatarUrl) = buildXmlMessage(1) {
         templateId = -1
         action = "web"
@@ -67,7 +69,7 @@ object DebugListener : SimpleListenerHost() {
         delay(millis)
         return runCatching {
             val avatar = avatars.getOrPut(bot.id) {
-                http.use { it.get<ByteArray>(bot.avatarUrl) }.toExternalResource()
+                http.get<ByteArray>(bot.avatarUrl).toExternalResource()
             }
             val image = uploadImage(resource = avatar)
             sendMessage(message = online(bot = bot, picture = image.queryUrl()))
@@ -96,8 +98,8 @@ object DebugListener : SimpleListenerHost() {
      */
     @EventHandler
     suspend fun NewFriendRequestEvent.mark() {
-        if (autoFriendAccept) accept() else DebugRequestEventData += this
         try {
+            if (autoFriendAccept) accept() else DebugRequestEventData += this
             bot.owner().sendMessage(buildMessageChain {
                 appendLine("@${fromNick}#${fromId} with <${eventId}>")
                 appendLine("申请添加好友")
@@ -105,8 +107,8 @@ object DebugListener : SimpleListenerHost() {
                 appendLine(message)
                 if (autoFriendAccept) appendLine("已自动同意")
             })
-        } catch (e: Throwable) {
-            logger.warning { "发送消息失败，$e" }
+        } catch (cause: Throwable) {
+            logger.warning({ "处理 新好友申请事件失败" }, cause)
         }
     }
 
@@ -116,16 +118,16 @@ object DebugListener : SimpleListenerHost() {
      */
     @EventHandler
     suspend fun BotInvitedJoinGroupRequestEvent.mark() {
-        if (autoGroupAccept) accept() else DebugRequestEventData += this
         try {
+            if (autoGroupAccept) accept() else DebugRequestEventData += this
             bot.owner().sendMessage(buildMessageChain {
                 appendLine("@${invitorNick}#${invitorId} with <${eventId}>")
                 appendLine("邀请机器人加入群")
                 appendLine("to [${groupName}](${groupId})")
                 if (autoGroupAccept) appendLine("已自动同意")
             })
-        } catch (e: Throwable) {
-            logger.warning { "发送消息失败，$e" }
+        } catch (cause: Throwable) {
+            logger.warning({ "处理 被邀请加群事件失败" }, cause)
         }
     }
 
@@ -135,8 +137,8 @@ object DebugListener : SimpleListenerHost() {
      */
     @EventHandler
     suspend fun MemberJoinRequestEvent.mark() {
-        if (autoMemberAccept) accept() else DebugRequestEventData += this
         try {
+            if (autoMemberAccept) accept() else DebugRequestEventData += this
             bot.owner().sendMessage(buildMessageChain {
                 appendLine("@${fromNick}#${fromId} with <${eventId}>")
                 appendLine("申请加入群")
@@ -144,21 +146,52 @@ object DebugListener : SimpleListenerHost() {
                 appendLine(message)
                 if (autoMemberAccept) appendLine("已自动同意")
             })
-        } catch (e: Throwable) {
-            logger.warning { "发送消息失败，$e" }
+        } catch (cause: Throwable) {
+            logger.warning({ "处理 新成员加群事件失败" }, cause)
         }
+    }
+
+    /**
+     * @see [DebugRequestEventData]
+     */
+    @EventHandler
+    fun FriendAddEvent.handle() {
+        DebugRequestEventData -= this
+    }
+
+    /**
+     * @see [DebugRequestEventData]
+     */
+    @EventHandler
+    suspend fun BotJoinGroupEvent.handle() {
+        DebugRequestEventData -= this
+        if (this is BotJoinGroupEvent.Invite) {
+            try {
+                @OptIn(ConsoleExperimentalApi::class)
+                bot.owner().sendMessage("机器人被 ${invitor.render()} 邀请加入群")
+            } catch (cause: Throwable) {
+                logger.warning({ "处理 机器人被邀请加群事件失败" }, cause)
+            }
+        }
+    }
+
+    /**
+     * @see [DebugRequestEventData]
+     */
+    @EventHandler
+    fun MemberJoinRequestEvent.handle() {
+        DebugRequestEventData -= this
     }
 
     /**
      * @see [MessageEvent.mark]
      * @see [MessagePostSendEvent.mark]
      */
-    val records = mutableMapOf<Long, MutableList<MessageSource>>().withDefault { mutableListOf() }
+    val records = mutableMapOf<Long, MutableList<MessageSource>>()
 
-    @OptIn(MiraiExperimentalApi::class)
     private val keys = listOf(FlashImage, OnlineAudio, RichMessage)
 
-    private fun download(message: MessageChain) = launch {
+    private fun download(message: MessageChain) = launch(SupervisorJob()) {
         when (val target = keys.firstNotNullOfOrNull { key -> message[key] } ?: return@launch) {
             is FlashImage -> {
                 try {
@@ -210,7 +243,7 @@ object DebugListener : SimpleListenerHost() {
      */
     @EventHandler
     fun MessageEvent.mark() {
-        records.getValue(subject.id).add(source)
+        records.getOrPut(subject.id, ::mutableListOf).add(source)
         if (autoDownloadMessage) {
             download(message)
         }
@@ -221,7 +254,7 @@ object DebugListener : SimpleListenerHost() {
      */
     @EventHandler
     fun MessagePostSendEvent<*>.mark() {
-        records.getValue(target.id).add(source ?: return)
+        records.getOrPut(target.id, ::mutableListOf).add(source ?: return)
     }
 
     private var status = false
@@ -230,9 +263,9 @@ object DebugListener : SimpleListenerHost() {
      * @see [include]
      */
     @EventHandler
-    suspend fun BotOnlineEvent.notify() = supervisorScope {
+    fun BotOnlineEvent.notify() {
         if (autoSendStatus > 0 && !status) {
-            this@DebugListener.launch {
+            launch(SupervisorJob()) {
                 status = true
                 while (isActive) {
                     BuiltInCommands.StatusCommand.runCatching {
@@ -244,8 +277,10 @@ object DebugListener : SimpleListenerHost() {
                 }
             }
         }
-        bot.groups.filter { include.testPermission(it.permitteeId) }.forEach { group ->
-            isActive && group.sendOnlineMessage(onlineMessageSendDuration * 1000L)
+        launch(SupervisorJob()) {
+            bot.groups.filter { include.testPermission(it.permitteeId) }.forEach { group ->
+                isActive && group.sendOnlineMessage(onlineMessageSendDuration * 1000L)
+            }
         }
     }
 }
