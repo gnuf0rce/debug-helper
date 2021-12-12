@@ -132,7 +132,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                     for (bot in Bot.instances) {
                         appendLine("--- ${bot.render()} ---")
                         for (group in bot.groups) {
-                            appendLine("${group.render()}[${group.botPermission}]<${group.members.size}>(${group.botMuteRemaining})")
+                            group as net.mamoe.mirai.internal.contact.GroupImpl
+                            appendLine("${group.render()}[${group.botPermission}]<${group.members.size}>(${group.botMuteRemaining}s) ${group.uin}")
                         }
                     }
                 })
