@@ -28,6 +28,7 @@ object DebugListener : SimpleListenerHost() {
 
     /**
      * @see [Bot.getFriendOrFail]
+     * @see [DebugSetting.owner]
      */
     private fun Bot.owner() = getFriendOrFail(DebugSetting.owner)
 
@@ -38,6 +39,8 @@ object DebugListener : SimpleListenerHost() {
     private val autoMemberAccept by DebugSetting::autoMemberAccept
 
     private val autoSendStatus by DebugSetting::autoSendStatus
+
+    private val autoDownloadMessage by DebugSetting::autoDownloadMessage
 
     private val onlineMessageSendDuration by DebugOnlineConfig::duration
 
@@ -79,10 +82,18 @@ object DebugListener : SimpleListenerHost() {
         return PermissionService.INSTANCE.register(permissionId(name), description, parentPermission)
     }
 
-    private val include by lazy {
+    /**
+     * @see [BotOnlineEvent.notify]
+     */
+    @Suppress("unused")
+    val include by lazy {
         DebugHelperPlugin.registerPermission("online.include", "发送上线通知")
     }
 
+    /**
+     * @see [autoFriendAccept]
+     * @see [DebugRequestEventData]
+     */
     @EventHandler
     suspend fun NewFriendRequestEvent.mark() {
         if (autoFriendAccept) accept() else DebugRequestEventData += this
@@ -99,6 +110,10 @@ object DebugListener : SimpleListenerHost() {
         }
     }
 
+    /**
+     * @see [autoGroupAccept]
+     * @see [DebugRequestEventData]
+     */
     @EventHandler
     suspend fun BotInvitedJoinGroupRequestEvent.mark() {
         if (autoGroupAccept) accept() else DebugRequestEventData += this
@@ -114,6 +129,10 @@ object DebugListener : SimpleListenerHost() {
         }
     }
 
+    /**
+     * @see [autoMemberAccept]
+     * @see [DebugRequestEventData]
+     */
     @EventHandler
     suspend fun MemberJoinRequestEvent.mark() {
         if (autoMemberAccept) accept() else DebugRequestEventData += this
@@ -130,22 +149,24 @@ object DebugListener : SimpleListenerHost() {
         }
     }
 
-    internal val records = mutableMapOf<Long, MutableList<MessageSource>>().withDefault { mutableListOf() }
+    /**
+     * @see [MessageEvent.mark]
+     * @see [MessagePostSendEvent.mark]
+     */
+    val records = mutableMapOf<Long, MutableList<MessageSource>>().withDefault { mutableListOf() }
 
     @OptIn(MiraiExperimentalApi::class)
     private val keys = listOf(FlashImage, OnlineAudio, RichMessage)
 
-    private fun download(message: MessageChain) = DebugHelperPlugin.launch {
+    private fun download(message: MessageChain) = launch {
         when (val target = keys.firstNotNullOfOrNull { key -> message[key] } ?: return@launch) {
             is FlashImage -> {
                 try {
                     DebugHelperPlugin.dataFolder.resolve("flash")
                         .resolve("${message.source.fromId}")
                         .resolve(target.image.imageId)
-                        .apply {
-                            parentFile.mkdirs()
-                            writeBytes(http.get(target.image.queryUrl()))
-                        }
+                        .apply { parentFile.mkdirs() }
+                        .writeBytes(http.get(target.image.queryUrl()))
                 } catch (e: Throwable) {
                     logger.warning { "$target 下载失败, $e" }
                 }
@@ -155,17 +176,15 @@ object DebugListener : SimpleListenerHost() {
                     DebugHelperPlugin.dataFolder.resolve("audio")
                         .resolve("${message.source.fromId}")
                         .resolve(target.filename)
-                        .apply {
-                            parentFile.mkdirs()
-                            writeBytes(http.get(target.urlForDownload))
-                        }
+                        .apply { parentFile.mkdirs() }
+                        .writeBytes(http.get(target.urlForDownload))
                 } catch (e: Throwable) {
                     logger.warning { "$target 下载失败, $e" }
                 }
             }
             is RichMessage -> {
                 try {
-                    val format = when (target.content[0]){
+                    val format = when (target.content[0]) {
                         '<' -> "xml"
                         '{' -> "json"
                         else -> "rich"
@@ -173,10 +192,8 @@ object DebugListener : SimpleListenerHost() {
                     DebugHelperPlugin.dataFolder.resolve("service")
                         .resolve("${message.source.fromId}")
                         .resolve("${message.source.time}.${format}")
-                        .apply {
-                            parentFile.mkdirs()
-                            writeText(target.content)
-                        }
+                        .apply { parentFile.mkdirs() }
+                        .writeText(target.content)
                 } catch (e: Throwable) {
                     logger.warning { "$target 下载失败, $e" }
                 }
@@ -187,14 +204,21 @@ object DebugListener : SimpleListenerHost() {
         }
     }
 
+    /**
+     * @see [records]
+     * @see [autoDownloadMessage]
+     */
     @EventHandler
     fun MessageEvent.mark() {
         records.getValue(subject.id).add(source)
-        if (DebugSetting.autoDownloadMessage) {
+        if (autoDownloadMessage) {
             download(message)
         }
     }
 
+    /**
+     * @see [records]
+     */
     @EventHandler
     fun MessagePostSendEvent<*>.mark() {
         records.getValue(target.id).add(source ?: return)
@@ -202,6 +226,9 @@ object DebugListener : SimpleListenerHost() {
 
     private var status = false
 
+    /**
+     * @see [include]
+     */
     @EventHandler
     suspend fun BotOnlineEvent.notify() = supervisorScope {
         if (autoSendStatus > 0 && !status) {
