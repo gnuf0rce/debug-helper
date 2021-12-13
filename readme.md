@@ -18,28 +18,31 @@
 
 ### DebugCommands
 
-| 指令                                         | 描述                 |
-|:---------------------------------------------|:---------------------|
-| `/<send-groups> [text] [atAll]?`             | 向所有群发送消息     |
-| `/<at-all> [text] [group]?`                  | 向指定群发送AtAll    |
-| `/<send> [contact] [text] [at]?`             | 向指定联系人发送消息 |
-| `/<recall>`                                  | 尝试撤回消息         |
-| `/<group>`                                   | 查看当前的群组       |
-| `/<friend>`                                  | 查看当前的好友       |
-| `/<request>`                                 | 查看申请列表         |
-| `/<contact-request> [id] [accept]? [black]?` | 接受联系人申请       |
+| 指令                                           | 描述              |
+|:---------------------------------------------|:----------------|
+| `/<send-groups> [text] [atAll]?`             | 向所有群发送消息        |
+| `/<at-all> [text] [group]?`                  | 向指定群发送AtAll     |
+| `/<send> [contact] [text] [at]?`             | 向指定联系人发送消息      |
+| `/<recall> [contact]?`                       | 尝试撤回消息          |
+| `/<group>`                                   | 查看当前的群组         |
+| `/<friend>`                                  | 查看当前的好友         |
+| `/<request>`                                 | 查看申请列表          |
+| `/<contact-request> [id] [accept]? [black]?` | 接受联系人申请         |
 | `/<contact-delete> [contact]`                | 删除联系人           |
 | `/<group-nick> [name] [group]?`              | 设置群名片           |
-| `/<gc>`                                      | 主动触发 JVM GC      |
-| `/<random-image> [contact]?`                 | 随机发送一张图片     |
-| `/<forward> [contact] [title]?`              | 转发消息，句号结束   |
+| `/<gc>`                                      | 主动触发 JVM GC     |
+| `/<random-image> [contact]?`                 | 随机发送一张图片        |
+| `/<forward> [contact] [title]?`              | 转发消息，句号结束       |
 | `/<fork> [contact] {codes}`                  | 从mirai-code构造消息 |
-| `/<rich> [content]`                          | 构造卡片消息         |
-| `/<registered>`                              | 查看已注册指令       |
+| `/<rich> [content]`                          | 构造卡片消息          |
+| `/<registered>`                              | 查看已注册指令         |
 
 id 是事件id 或者 好友id 或者 群id  
 contact 和 at 这两个参数可以是 数字号码 也可以是 @XXX  
-`/recall`指令可以通过回复消息指定要撤销的消息, 没有指定消息时将会尝试寻找最后一条不是由指令发送者发送的消息 
+#### `/recall`的使用
+1. 不指定`contact`时，可以通过回复消息指定要撤销的消息，撤销回复消息指定的消息，如果没有指定，将尝试撤销最后一条不是由指令发送者发送的消息
+2. `contact`是群员时，将尝试撤销这个群员的最后一条消息
+3. `contact`是群或好友时，将尝试撤销bot的最后一条消息
 
 ## 权限
 

@@ -88,15 +88,30 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     object RecallCommand : SimpleCommand(owner = owner, "recall", description = "撤回消息") {
         @Handler
-        suspend fun CommandSenderOnMessage<*>.handle() {
+        suspend fun CommandSender.handle(contact: Contact? = null) {
             try {
-                val record = DebugListener.records.getValue(fromEvent.subject.id)
-                val source = fromEvent.message.findIsInstance<QuoteReply>()?.source
-                    ?: record.findLast { it.fromId != fromEvent.source.fromId }
+                val (record, source) = when {
+                    contact is Member -> {
+                        val record = DebugListener.records.getValue(contact.group.id)
+                        record to record.findLast { it.fromId == contact.id }
+                    }
+                    contact != null -> {
+                        val record = DebugListener.records.getValue(contact.id)
+                        record to record.findLast { it.fromId == contact.bot.id }
+                    }
+                    this is CommandSenderOnMessage<*> -> {
+                        val record = DebugListener.records.getValue(fromEvent.subject.id)
+                        record to (fromEvent.message.findIsInstance<QuoteReply>()?.source
+                                ?: record.findLast { it.fromId != fromEvent.source.fromId })
+                    }
+                    else -> {
+                        throw IllegalArgumentException("无法指定要撤回消息")
+                    }
+                }
                 if (source != null) {
                     source.recall()
                     record.remove(source)
-                    sendMessage("...撤回成功")
+                    sendMessage("${source.fromId} 的消息撤回成功")
                 } else {
                     sendMessage("未找到消息")
                 }
