@@ -7,7 +7,7 @@
 [![MiraiForum](https://img.shields.io/badge/post-on%20MiraiForum-yellow)](https://mirai.mamoe.net/topic/452)
 
 机器人会在触发上线事件后向群聊发送上线卡片消息  
-有好友申请和加群申请时，会记录事件信息，并联系机器人所有者  
+有好友申请和加群申请时，会记录事件信息，并联系机器人所有者
 
 ## 指令
 
@@ -38,8 +38,10 @@
 | `/<registered>`                              | 查看已注册指令         |
 
 id 是事件id 或者 好友id 或者 群id  
-contact 和 at 这两个参数可以是 数字号码 也可以是 @XXX  
+contact 和 at 这两个参数可以是 数字号码 也可以是 @XXX
+
 #### `/recall`的使用
+
 1. 不指定`contact`时，可以通过回复消息指定要撤销的消息，撤销回复消息指定的消息，如果没有指定，将尝试撤销最后一条不是由指令发送者发送的消息
 2. `contact`是群员时，将尝试撤销这个群员的最后一条消息
 3. `contact`是群或好友时，将尝试撤销bot的最后一条消息
