@@ -278,8 +278,11 @@ object DebugListener : SimpleListenerHost() {
             }
         }
         launch(SupervisorJob()) {
-            bot.groups.filter { include.testPermission(it.permitteeId) }.forEach { group ->
-                isActive && group.sendOnlineMessage(onlineMessageSendDuration * 1000L)
+            for (group in bot.groups) {
+                if (!isActive) break
+                if (!include.testPermission(group.permitteeId)) continue
+
+                group.sendOnlineMessage(onlineMessageSendDuration * 1000L)
             }
         }
     }
