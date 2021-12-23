@@ -16,24 +16,11 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
 
     private val members by value<MutableMap<Long, List<RequestEventData.MemberJoinRequest>>>()
 
-    private fun requests() = object : Iterator<Map.Entry<Long, List<RequestEventData>>> {
-        private val friend = friends.iterator()
-        private val group = groups.iterator()
-        private val member = members.iterator()
-
-        override fun hasNext(): Boolean = friend.hasNext() || group.hasNext() || member.hasNext()
-
-        override fun next(): Map.Entry<Long, List<RequestEventData>> {
-            if (friend.hasNext()) return friend.next()
-            if (group.hasNext()) return group.next()
-            if (member.hasNext()) return member.next()
-            throw NoSuchElementException()
-        }
-    }
+    operator fun iterator() = (friends.entries + groups.entries + members.entries).iterator()
 
     @OptIn(ConsoleExperimentalApi::class)
     fun detail(): String = buildString {
-        for ((qq, list) in requests()) {
+        for ((qq, list) in this@DebugRequestEventData) {
             if (list.isEmpty()) continue
             val bot = Bot.getInstance(qq)
             appendLine("--- ${bot.render()} ---")
@@ -67,7 +54,7 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
     }
 
     suspend fun handle(id: Long, accept: Boolean, black: Boolean, message: String): RequestEventData? {
-        for ((qq, list) in requests()) {
+        for ((qq, list) in this@DebugRequestEventData) {
             val request = list[id] ?: continue
             val bot = Bot.getInstance(qq)
             if (accept) {
