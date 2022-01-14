@@ -46,8 +46,7 @@
 #### contact-request的使用
 
 1. `id` 是 事件id 或 好友id 或 群id  
-2. `contact` 和 `at` 这两个参数可以是 数字号码 也可以是 @XXX
-3. `accept` 和 `black` 内容为(不区分大小写) `true`, `yes`, `enabled`, `on`, `1` 时表示 `true`
+2. `accept` 和 `black` 参数为(不区分大小写) `true`, `yes`, `enabled`, `on`, `1` 时表示 `true`
 
 ## 权限
 
