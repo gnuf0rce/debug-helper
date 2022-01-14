@@ -37,14 +37,17 @@
 | `/<rich> [content]`                          | 构造卡片消息          |
 | `/<registered>`                              | 查看已注册指令         |
 
-id 是事件id 或者 好友id 或者 群id  
-contact 和 at 这两个参数可以是 数字号码 也可以是 @XXX
-
 #### recall的使用
 
 1. 不指定`contact`时，可以通过回复消息指定要撤销的消息，撤销回复消息指定的消息，如果没有指定，将尝试撤销最后一条不是由指令发送者发送的消息
 2. `contact`是群员时，将尝试撤销这个群员的最后一条消息
 3. `contact`是群或好友时，将尝试撤销bot的最后一条消息
+
+#### contact-request的使用
+
+1. `id` 是 事件id 或 好友id 或 群id  
+2. `contact` 和 `at` 这两个参数可以是 数字号码 也可以是 @XXX
+3. `accept` 和 `black` 内容为(不区分大小写) `true`, `yes`, `enabled`, `on`, `1` 时表示 `true`
 
 ## 权限
 

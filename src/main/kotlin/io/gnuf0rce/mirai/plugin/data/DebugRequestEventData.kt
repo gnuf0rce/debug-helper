@@ -18,11 +18,11 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
 
     operator fun iterator() = (friends.entries + groups.entries + members.entries).iterator()
 
-    @OptIn(ConsoleExperimentalApi::class)
     fun detail(): String = buildString {
         for ((qq, list) in this@DebugRequestEventData) {
             if (list.isEmpty()) continue
             val bot = Bot.getInstance(qq)
+            @OptIn(ConsoleExperimentalApi::class)
             appendLine("--- ${bot.render()} ---")
             for (request in list) {
                 appendLine(request)
@@ -54,7 +54,7 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
     }
 
     suspend fun handle(id: Long, accept: Boolean, black: Boolean, message: String): RequestEventData? {
-        for ((qq, list) in this@DebugRequestEventData) {
+        for ((qq, list) in this) {
             val request = list[id] ?: continue
             val bot = Bot.getInstance(qq)
             if (accept) {
@@ -66,6 +66,7 @@ object DebugRequestEventData : AutoSavePluginData("DebugRequestEventData") {
                     is RequestEventData.MemberJoinRequest -> request.reject(bot, black, message)
                 }
             }
+            return request
         }
         return null
     }
