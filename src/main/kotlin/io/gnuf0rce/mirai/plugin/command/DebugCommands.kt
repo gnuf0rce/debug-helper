@@ -8,9 +8,6 @@ import io.ktor.client.request.*
 import kotlinx.coroutines.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
-import net.mamoe.mirai.console.internal.command.*
 import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
 import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.console.util.ContactUtils.render
@@ -24,7 +21,7 @@ import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.code.*
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import java.io.InputStream
+import java.io.*
 
 @OptIn(ConsoleExperimentalApi::class)
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
@@ -32,9 +29,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     private val all: List<Command> by lazy { this::class.nestedClasses.mapNotNull { it.objectInstance as? Command } }
 
-    fun registerAll() = all.associateWith { it.register() }
-
-    fun unregisterAll() = all.associateWith { it.unregister() }
+    operator fun iterator(): Iterator<Command> = all.iterator()
 
     private val owner: CommandOwner get() = DebugHelperPlugin
 
@@ -50,7 +45,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object SendAllCommand : SimpleCommand(owner = owner, "send-groups", description = "预告") {
+    object SendAllCommand : SimpleCommand(owner = owner, "send-groups", description = "群广播") {
         @Handler
         suspend fun CommandSender.handle(text: String, atAll: Boolean = false) {
             try {
@@ -62,7 +57,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object AtAllCommand : SimpleCommand(owner = owner, "at-all", description = "预告") {
+    object AtAllCommand : SimpleCommand(owner = owner, "at-all", description = "全体@") {
         @Handler
         suspend fun CommandSender.handle(text: String, group: Group = subject as Group) {
             try {
@@ -102,7 +97,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                     this is CommandSenderOnMessage<*> -> {
                         val record = DebugListener.records.getValue(fromEvent.subject.id)
                         record to (fromEvent.message.findIsInstance<QuoteReply>()?.source
-                                ?: record.findLast { it.fromId != fromEvent.source.fromId })
+                            ?: record.findLast { it.fromId != fromEvent.source.fromId })
                     }
                     else -> {
                         throw IllegalArgumentException("无法指定要撤回消息")
@@ -309,7 +304,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle() {
             try {
-                val commands = CommandManagerImpl.allRegisteredCommands
+                val commands = CommandManager.allRegisteredCommands
                 val strategy = object : ForwardMessage.DisplayStrategy {
                     override fun generateTitle(forward: RawForwardMessage): String {
                         return "已注册指令"
@@ -333,8 +328,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                     )
                 }
 
-                val forward = RawForwardMessage(nodes).render(strategy)
-                sendMessage(forward + IgnoreLengthCheck)
+                val forward = RawForwardMessage(nodes).render(strategy) + IgnoreLengthCheck
+                sendMessage(forward)
             } catch (e: Throwable) {
                 sendMessage("出现错误 $e")
             }
