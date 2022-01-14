@@ -5,17 +5,14 @@ import io.gnuf0rce.mirai.plugin.data.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.plugin.jvm.*
-import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.event.*
 
 object DebugHelperPlugin : KotlinPlugin(
-    JvmPluginDescription(id = "xyz.cssxsh.mirai.plugin.debug-helper", version = "1.1.7") {
+    JvmPluginDescription(id = "xyz.cssxsh.mirai.plugin.debug-helper", version = "1.2.0") {
         name("debug-helper")
         author("cssxsh")
     }
 ) {
-    @OptIn(ConsoleExperimentalApi::class)
-    private fun <T : PluginConfig> T.save() = loader.configStorage.store(this@DebugHelperPlugin, this)
 
     override fun onEnable() {
         DebugSetting.reload()

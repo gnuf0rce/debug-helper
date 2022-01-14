@@ -2,12 +2,12 @@ plugins {
     kotlin("jvm") version "1.5.31"
     kotlin("plugin.serialization") version "1.5.31"
 
-    id("net.mamoe.mirai-console") version "2.9.0-M1"
+    id("net.mamoe.mirai-console") version "2.9.2"
     id("net.mamoe.maven-central-publish") version "0.7.0"
 }
 
 group = "io.github.gnuf0rce"
-version = "1.1.7"
+version = "1.2.0"
 
 mavenCentralPublish {
     useCentralS01()
@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("net.mamoe:mirai-core-jvm:2.9.0-M1")
+    compileOnly("net.mamoe:mirai-core-jvm:2.9.2")
     testImplementation(kotlin("test", "1.5.31"))
 }
 
