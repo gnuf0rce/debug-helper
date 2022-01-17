@@ -6,6 +6,7 @@
 [![Downloads](https://img.shields.io/github/downloads/gnuf0rce/debug-helper/total)](https://shields.io/category/downloads)
 [![MiraiForum](https://img.shields.io/badge/post-on%20MiraiForum-yellow)](https://mirai.mamoe.net/topic/452)
 
+第一次运行之后请注意配置 [机器人所有者](#DebugSetting)  
 机器人会在触发上线事件后向群聊发送上线卡片消息  
 有好友申请和加群申请时，会记录事件信息，并联系机器人所有者
 
