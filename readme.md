@@ -6,6 +6,12 @@
 [![Downloads](https://img.shields.io/github/downloads/gnuf0rce/debug-helper/total)](https://shields.io/category/downloads)
 [![MiraiForum](https://img.shields.io/badge/post-on%20MiraiForum-yellow)](https://mirai.mamoe.net/topic/452)
 
+**使用前应该查阅的相关文档或项目**
+
+* [User Manual](https://github.com/mamoe/mirai/blob/dev/docs/UserManual.md)
+* [Permission Command](https://github.com/mamoe/mirai/blob/dev/mirai-console/docs/BuiltInCommands.md#permissioncommand)
+* [Chat Command](https://github.com/project-mirai/chat-command)
+
 第一次运行之后请注意配置 [机器人所有者](#DebugSetting)  
 机器人会在触发上线事件后向群聊发送上线卡片消息  
 有好友申请和加群申请时，会记录事件信息，并联系机器人所有者
@@ -13,9 +19,12 @@
 ## 指令
 
 注意: 使用前请确保可以 [在聊天环境执行指令](https://github.com/project-mirai/chat-command)   
-`<...>`中的是指令名，由空格隔开表示或，选择其中任一名称都可执行例如`/send 12345 上线 6789`  
+`<...>`中的是指令名  
 `[...]`表示参数，当`[...]`后面带`?`时表示参数可选  
 `{...}`表示连续的多个参数
+
+本插件指令权限ID 格式为 `xyz.cssxsh.mirai.plugin.debug-helper:command.*`, `*` 是指令的第一指令名  
+例如 `/send 12345 上线 6789` 的权限ID为 `xyz.cssxsh.mirai.plugin.debug-helper:command.send`
 
 ### DebugCommands
 
@@ -46,7 +55,7 @@
 
 #### contact-request的使用
 
-1. `id` 是 事件id 或 好友id 或 群id  
+1. `id` 是 事件id 或 好友id 或 群id
 2. `accept` 和 `black` 参数为(不区分大小写) `true`, `yes`, `enabled`, `on`, `1` 时表示 `true`
 
 ## 权限
