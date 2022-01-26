@@ -333,4 +333,62 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
+    object DeviceInfoCommand : SimpleCommand(owner = owner, primaryName = "device") {
+        @Handler
+        suspend fun UserCommandSender.handle() {
+            try {
+                val forward = buildForwardMessage(subject) {
+                    var count = 0
+                    for (bot in Bot.instances) {
+                        try {
+                            val info = with(DeviceInfoManager) {
+                                bot.configuration.deviceInfo!!(bot).toCurrentInfo()
+                            }
+                            bot says {
+                                with(info) {
+                                    appendLine("display: $display")
+                                    appendLine("product: $product")
+                                    appendLine("device: $device")
+                                    appendLine("board: $board")
+                                    appendLine("brand: $brand")
+                                    appendLine("model: $model")
+                                    appendLine("bootloader: $bootloader")
+                                    appendLine("fingerprint: $fingerprint")
+                                    appendLine("bootId: $bootId")
+                                    appendLine("procVersion: $procVersion")
+                                    appendLine("baseBand: ${baseBand.data.toUHexString("").lowercase()}")
+                                    appendLine("version: $version")
+                                    appendLine("simInfo: $simInfo")
+                                    appendLine("osType: $osType")
+                                    appendLine("macAddress: $macAddress")
+                                    appendLine("wifiBSSID: $wifiBSSID")
+                                    appendLine("wifiSSID: $wifiSSID")
+                                    appendLine("imsiMd5: $${imsiMd5.data.toUHexString("").lowercase()}")
+                                    appendLine("imei: $imei")
+                                    appendLine("apn: $apn")
+                                }
+                            }
+                            count++
+                        } catch (cause: Throwable) {
+                            bot says cause.toString()
+                        }
+                    }
+
+                    displayStrategy = object : ForwardMessage.DisplayStrategy {
+                        override fun generateTitle(forward: RawForwardMessage): String {
+                            return "机器人设备信息"
+                        }
+
+                        override fun generateSummary(forward: RawForwardMessage): String {
+                            return "共${bot}条设备信息"
+                        }
+                    }
+                }
+                sendMessage(forward + IgnoreLengthCheck)
+            } catch (e: Throwable) {
+                sendMessage("出现错误 $e")
+            }
+        }
+    }
+
 }
