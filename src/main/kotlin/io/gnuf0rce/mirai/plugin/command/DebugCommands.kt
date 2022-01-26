@@ -6,6 +6,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.json.Json
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
@@ -305,7 +306,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                 val registered = CommandManager.allRegisteredCommands
                 val forward = buildForwardMessage(subject) {
                     for (command in registered) {
-                        bot.named(command.owner.parentPermission.id.namespace) says {
+                        bot named command.owner.parentPermission.id.namespace says {
                             appendLine("Id: ${command.permission.id}")
                             appendLine("HasPermission: ${hasPermission(command.permission)}")
                             appendLine("Description: ${command.description}")
@@ -338,7 +339,11 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                     var count = 0
                     for (bot in Bot.instances) {
                         try {
-                            val json = DeviceInfoManager.serialize(bot.configuration.deviceInfo!!(bot))
+                            val json = DeviceInfoManager.serialize(info = bot.configuration.deviceInfo!!(bot), Json {
+                                ignoreUnknownKeys = true
+                                isLenient = true
+                                prettyPrint = true
+                            })
                             bot says json
                             count++
                         } catch (cause: Throwable) {
