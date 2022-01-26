@@ -46,6 +46,7 @@
 | `/<fork> [contact] {codes}`                  | 从mirai-code构造消息 |
 | `/<rich> [content]`                          | 构造卡片消息          |
 | `/<registered>`                              | 查看已注册指令         |
+| `/<device>`                                  | 查看 Bot 设备信息     |
 
 #### recall的使用
 
