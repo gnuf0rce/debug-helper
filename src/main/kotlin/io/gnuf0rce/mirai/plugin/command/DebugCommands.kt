@@ -9,9 +9,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
-import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.console.util.ContactUtils.render
-import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.event.events.*
@@ -23,7 +21,6 @@ import net.mamoe.mirai.message.code.*
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import java.io.*
 
-@OptIn(ConsoleExperimentalApi::class)
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
 object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
 
