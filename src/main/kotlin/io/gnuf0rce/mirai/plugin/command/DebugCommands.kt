@@ -12,15 +12,17 @@ import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
 import net.mamoe.mirai.console.util.ContactUtils.render
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.contact.Contact.Companion.sendImage
+import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.code.*
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import java.io.*
+import kotlin.system.*
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
 object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
@@ -33,8 +35,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     private val logger get() = DebugHelperPlugin.logger
 
-    private val randomImageApi get() = DebugSetting.randomImageApi
-
     private suspend fun Collection<Contact>.sendMessage(message: Message) = map {
         runCatching {
             it.sendMessage(message)
@@ -43,7 +43,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object SendAllCommand : SimpleCommand(owner = owner, primaryName = "send-groups", description = "群广播") {
+    object SendAllCommand : SimpleCommand(owner, primaryName = "send-groups", description = "群广播") {
         @Handler
         suspend fun CommandSender.handle(text: String, atAll: Boolean = false) {
             try {
@@ -55,7 +55,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object AtAllCommand : SimpleCommand(owner = owner, primaryName = "at-all", description = "全体@") {
+    object AtAllCommand : SimpleCommand(owner, primaryName = "at-all", description = "全体@") {
         @Handler
         suspend fun CommandSender.handle(text: String, group: Group = subject as Group) {
             try {
@@ -67,7 +67,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object SendCommand : SimpleCommand(owner = owner, primaryName = "send", description = "发送消息") {
+    object SendCommand : SimpleCommand(owner, primaryName = "send", description = "发送消息") {
         @Handler
         suspend fun CommandSender.handle(contact: Contact, text: String, at: User? = null) {
             try {
@@ -79,7 +79,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object RecallCommand : SimpleCommand(owner = owner, primaryName = "recall", description = "撤回消息") {
+    object RecallCommand : SimpleCommand(owner, primaryName = "recall", description = "撤回消息") {
         @Handler
         suspend fun CommandSender.handle(contact: Contact? = null) {
             try {
@@ -114,7 +114,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object FriendCommand : SimpleCommand(owner = owner, primaryName = "friend", description = "查看当前的好友") {
+    object FriendCommand : SimpleCommand(owner, primaryName = "friend", description = "查看当前的好友") {
         @Handler
         suspend fun CommandSender.handle() {
             try {
@@ -132,7 +132,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object GroupCommand : SimpleCommand(owner = owner, primaryName = "group", description = "查看当前的群组") {
+    object GroupCommand : SimpleCommand(owner, primaryName = "group", description = "查看当前的群组") {
         @Handler
         suspend fun CommandSender.handle() {
             try {
@@ -151,7 +151,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object RequestListCommand : SimpleCommand(owner = owner, primaryName = "request", description = "申请列表") {
+    object RequestListCommand : SimpleCommand(owner, primaryName = "request", description = "申请列表") {
         @Handler
         suspend fun CommandSender.handle() {
             try {
@@ -162,8 +162,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object ContactRequestCommand :
-        SimpleCommand(owner = owner, primaryName = "contact-request", description = "接受联系人") {
+    object ContactRequestCommand : SimpleCommand(owner, primaryName = "contact-request", description = "接受联系人") {
         @Handler
         suspend fun CommandSender.handle(
             id: Long,
@@ -180,7 +179,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object FriendDeleteCommand : SimpleCommand(owner = owner, primaryName = "contact-delete", description = "删除联系人") {
+    object FriendDeleteCommand : SimpleCommand(owner, primaryName = "contact-delete", description = "删除联系人") {
         @Handler
         suspend fun CommandSender.handle(contact: Contact) {
             try {
@@ -198,7 +197,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object GroupNickCommand : SimpleCommand(owner = owner, primaryName = "group-nick", description = "群昵称") {
+    object GroupNickCommand : SimpleCommand(owner, primaryName = "group-nick", description = "群昵称") {
         @Handler
         suspend fun CommandSender.handle(name: String, group: Group = subject as Group) {
             try {
@@ -210,7 +209,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object GarbageCommand : SimpleCommand(owner = owner, primaryName = "gc", description = "垃圾回收") {
+    object GarbageCommand : SimpleCommand(owner, primaryName = "gc", description = "垃圾回收") {
         @Handler
         suspend fun CommandSender.handle() {
             System.gc()
@@ -218,22 +217,32 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object ImageCommand : SimpleCommand(owner = owner, primaryName = "random-image", description = "随机发送一张图片") {
+    object ImageCommand : SimpleCommand(owner, primaryName = "random-image", description = "随机发送一张图片") {
         private val http = HttpClient(OkHttp)
+
+        private val randomImageApi get() = DebugSetting.randomImageApi
 
         @Handler
         suspend fun CommandSender.handle(contact: Contact = subject as Contact) {
-            try {
-                http.get<InputStream>(randomImageApi).use { input ->
-                    contact.sendImage(input)
+            val message = try {
+                val image: Image
+                val upload = http.get<InputStream>(randomImageApi).use { input ->
+                    measureTimeMillis {
+                        image = contact.uploadImage(input)
+                    }
                 }
+                val send = measureTimeMillis {
+                    contact.sendMessage(image)
+                }
+                "upload: ${upload}ms, send: ${send}ms, url: ${image.queryUrl()}"
             } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
+                "出现错误 $e"
             }
+            sendMessage(message)
         }
     }
 
-    object ForwardCommand : SimpleCommand(owner = owner, primaryName = "forward", description = "转发") {
+    object ForwardCommand : SimpleCommand(owner, primaryName = "forward", description = "转发") {
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle(contact: Contact, title: String = "转发测试") {
             try {
@@ -252,7 +261,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object ForkCommand : SimpleCommand(owner = owner, primaryName = "fork", description = "从mirai-code构造消息") {
+    object ForkCommand : SimpleCommand(owner, primaryName = "fork", description = "从mirai-code构造消息") {
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle(contact: Contact, vararg codes: String) {
             try {
@@ -270,7 +279,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object RichCommand : SimpleCommand(owner = owner, primaryName = "rich", description = "构造卡片消息") {
+    object RichCommand : SimpleCommand(owner, primaryName = "rich", description = "构造卡片消息") {
         private val SERVICE_ID = """(?<=serviceID=")\d+"""
             .toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
 
@@ -299,7 +308,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object RegisteredCommand : SimpleCommand(owner = owner, primaryName = "registered", description = "查看已注册指令") {
+    object RegisteredCommand : SimpleCommand(owner, primaryName = "registered", description = "查看已注册指令") {
         @Handler
         suspend fun UserCommandSender.handle() {
             try {
@@ -331,7 +340,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object DeviceInfoCommand : SimpleCommand(owner = owner, primaryName = "device") {
+    object DeviceInfoCommand : SimpleCommand(owner, primaryName = "device") {
         @Handler
         suspend fun UserCommandSender.handle() {
             try {
