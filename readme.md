@@ -24,7 +24,8 @@
 `{...}`表示连续的多个参数
 
 本插件指令权限ID 格式为 `xyz.cssxsh.mirai.plugin.debug-helper:command.*`, `*` 是指令的第一指令名  
-例如 `/send 12345 上线 6789` 的权限ID为 `xyz.cssxsh.mirai.plugin.debug-helper:command.send`
+例如 `/send 12345 上线 6789` 的权限ID为 `xyz.cssxsh.mirai.plugin.debug-helper:command.send`  
+对 机器人发送的新联系人通知消息 回复 `同意` 或 `不同意` 或 `拉黑` 即可处理
 
 ### DebugCommands
 
@@ -58,6 +59,7 @@
 
 1. `id` 是 事件id 或 好友id 或 群id
 2. `accept` 和 `black` 参数为(不区分大小写) `true`, `yes`, `enabled`, `on`, `1` 时表示 `true`
+3. 对 机器人发送的新联系人通知消息 回复 `同意` 或 `不同意` 或 `拉黑` 即可处理
 
 ## 权限
 

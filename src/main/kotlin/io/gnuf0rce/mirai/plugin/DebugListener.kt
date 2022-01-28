@@ -1,5 +1,6 @@
 package io.gnuf0rce.mirai.plugin
 
+import io.gnuf0rce.mirai.plugin.command.*
 import io.gnuf0rce.mirai.plugin.data.*
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
@@ -8,6 +9,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
+import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.console.permission.*
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
@@ -255,6 +257,26 @@ object DebugListener : SimpleListenerHost() {
     @EventHandler
     fun MessagePostSendEvent<*>.mark() {
         records.getOrPut(target.id, ::mutableListOf).add(source ?: return)
+    }
+
+    /**
+     * @see DebugRequestEventData
+     */
+    @EventHandler
+    suspend fun FriendMessageEvent.mark() {
+        if (friend == bot.owner()) {
+            val original = (message.findIsInstance<QuoteReply>() ?: return)
+                .source.originalMessage
+                .contentToString()
+            val id = ("""(?<=<)\d+""".toRegex().find(original)?.value ?: return).toLong()
+
+            val accept = "同意|OK|没问题".toRegex() in message.contentToString()
+            val black = "拉黑|黑名单".toRegex() in message.contentToString()
+
+            with(DebugCommands.ContactRequestCommand) {
+                toCommandSender().handle(id = id, accept = accept, black = black)
+            }
+        }
     }
 
     private var status = false
