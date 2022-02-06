@@ -24,8 +24,7 @@
 `{...}`表示连续的多个参数
 
 本插件指令权限ID 格式为 `io.gnuf0rce.mirai.plugin.debug-helper:command.*`, `*` 是指令的第一指令名  
-例如 `/device` 的权限ID为 `io.gnuf0rce.mirai.plugin.debug-helper:command.device`  
-对 机器人发送的新联系人通知消息 回复 `同意` 或 `不同意` 或 `拉黑` 即可处理
+例如 `/device` 的权限ID为 `io.gnuf0rce.mirai.plugin.debug-helper:command.device`
 
 ### DebugCommands
 
