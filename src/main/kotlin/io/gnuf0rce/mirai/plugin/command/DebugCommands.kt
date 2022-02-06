@@ -6,11 +6,9 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
-import net.mamoe.mirai.console.util.ContactUtils.render
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.event.events.*
@@ -20,7 +18,6 @@ import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.code.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
-import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import java.io.*
 import kotlin.system.*
 
@@ -35,26 +32,6 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     private val logger get() = DebugHelperPlugin.logger
 
-    private suspend fun Collection<Contact>.sendMessage(message: Message) = map {
-        runCatching {
-            it.sendMessage(message)
-        }.onFailure {
-            logger.warning { "发送消息失败 $it" }
-        }
-    }
-
-    object SendAllCommand : SimpleCommand(owner, primaryName = "send-groups", description = "群广播") {
-        @Handler
-        suspend fun CommandSender.handle(text: String, atAll: Boolean = false) {
-            try {
-                val message = if (atAll) AtAll + text + ForceAsLongMessage else text.toPlainText()
-                Bot.instances.flatMap(Bot::groups).sendMessage(message)
-            } catch (e: Throwable) {
-                sendMessage("'${text}'发送失败, $e")
-            }
-        }
-    }
-
     object AtAllCommand : SimpleCommand(owner, primaryName = "at-all", description = "全体@") {
         @Handler
         suspend fun CommandSender.handle(text: String, group: Group = subject as Group) {
@@ -62,149 +39,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                 val message = AtAll + text + ForceAsLongMessage
                 group.sendMessage(message)
             } catch (e: Throwable) {
-                sendMessage("'${text}'发送失败, $e")
-            }
-        }
-    }
-
-    object SendCommand : SimpleCommand(owner, primaryName = "send", description = "发送消息") {
-        @Handler
-        suspend fun CommandSender.handle(contact: Contact, text: String, at: User? = null) {
-            try {
-                val message: Message = if (at != null) At(at) + text else text.toPlainText()
-                contact.sendMessage(message)
-            } catch (e: Throwable) {
-                sendMessage("'${text}'发送失败, $e")
-            }
-        }
-    }
-
-    object RecallCommand : SimpleCommand(owner, primaryName = "recall", description = "撤回消息") {
-        @Handler
-        suspend fun CommandSender.handle(contact: Contact? = null) {
-            try {
-                val (record, source) = when {
-                    contact is Member -> {
-                        val record = DebugListener.records.getValue(contact.group.id)
-                        record to record.findLast { it.fromId == contact.id }
-                    }
-                    contact != null -> {
-                        val record = DebugListener.records.getValue(contact.id)
-                        record to record.findLast { it.fromId == contact.bot.id }
-                    }
-                    this is CommandSenderOnMessage<*> -> {
-                        val record = DebugListener.records.getValue(fromEvent.subject.id)
-                        record to (fromEvent.message.findIsInstance<QuoteReply>()?.source
-                            ?: record.findLast { it.fromId != fromEvent.source.fromId })
-                    }
-                    else -> {
-                        throw IllegalArgumentException("无法指定要撤回消息")
-                    }
-                }
-                if (source != null) {
-                    source.recall()
-                    record.remove(source)
-                    sendMessage("${source.fromId} 的消息撤回成功")
-                } else {
-                    sendMessage("未找到消息")
-                }
-            } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
-            }
-        }
-    }
-
-    object FriendCommand : SimpleCommand(owner, primaryName = "friend", description = "查看当前的好友") {
-        @Handler
-        suspend fun CommandSender.handle() {
-            try {
-                sendMessage(buildMessageChain {
-                    for (bot in Bot.instances) {
-                        appendLine("--- ${bot.render()} ---")
-                        for (friend in bot.friends) {
-                            appendLine(friend.render())
-                        }
-                    }
-                })
-            } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
-            }
-        }
-    }
-
-    object GroupCommand : SimpleCommand(owner, primaryName = "group", description = "查看当前的群组") {
-        @Handler
-        suspend fun CommandSender.handle() {
-            try {
-                sendMessage(buildMessageChain {
-                    for (bot in Bot.instances) {
-                        appendLine("--- ${bot.render()} ---")
-                        for (group in bot.groups) {
-                            group as net.mamoe.mirai.internal.contact.GroupImpl
-                            appendLine("${group.render()}[${group.botPermission}]<${group.members.size}>(${group.botMuteRemaining}s) ${group.uin}")
-                        }
-                    }
-                })
-            } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
-            }
-        }
-    }
-
-    object RequestListCommand : SimpleCommand(owner, primaryName = "request", description = "申请列表") {
-        @Handler
-        suspend fun CommandSender.handle() {
-            try {
-                sendMessage(DebugRequestEventData.detail())
-            } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
-            }
-        }
-    }
-
-    object ContactRequestCommand : SimpleCommand(owner, primaryName = "contact-request", description = "接受联系人") {
-        @Handler
-        suspend fun CommandSender.handle(
-            id: Long,
-            accept: Boolean = true,
-            black: Boolean = false,
-            message: String = ""
-        ) {
-            try {
-                val request = requireNotNull(DebugRequestEventData.handle(id, accept, black, message)) { "找不到事件" }
-                sendMessage("请求已处理 $request")
-            } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
-            }
-        }
-    }
-
-    object FriendDeleteCommand : SimpleCommand(owner, primaryName = "contact-delete", description = "删除联系人") {
-        @Handler
-        suspend fun CommandSender.handle(contact: Contact) {
-            try {
-                val r = (contact as? Friend)?.delete()
-                    ?: (contact as? Group)?.quit()
-                    ?: (contact as? Stranger)?.delete()
-                if (r != null) {
-                    sendMessage("处理成功")
-                } else {
-                    sendMessage("未找到联系人")
-                }
-            } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
-            }
-        }
-    }
-
-    object GroupNickCommand : SimpleCommand(owner, primaryName = "group-nick", description = "群昵称") {
-        @Handler
-        suspend fun CommandSender.handle(name: String, group: Group = subject as Group) {
-            try {
-                group.botAsMember.nameCard = name
-                sendMessage("处理成功")
-            } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
+                logger.warning({ "'${text}'发送失败" }, e)
+                sendMessage("'${text}'发送失败")
             }
         }
     }
@@ -217,7 +53,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
         }
     }
 
-    object ImageCommand : SimpleCommand(owner, primaryName = "random-image", description = "随机发送一张图片") {
+    object ImageCommand : SimpleCommand(owner, primaryName = "random-image", description = "随机图片") {
         private val http = HttpClient(OkHttp)
 
         private val randomImageApi get() = DebugSetting.randomImageApi
@@ -236,13 +72,15 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                 }
                 "upload: ${upload}ms, send: ${send}ms, url: ${image.queryUrl()}"
             } catch (e: Throwable) {
-                "出现错误 $e"
+                logger.warning({ "出现错误" }, e)
+                "出现错误"
             }
+
             sendMessage(message)
         }
     }
 
-    object ForwardCommand : SimpleCommand(owner, primaryName = "forward", description = "转发") {
+    object ForwardCommand : SimpleCommand(owner, primaryName = "forward", description = "转发测试") {
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle(contact: Contact, title: String = "转发测试") {
             try {
@@ -274,7 +112,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                     }
                 }
             } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
+                logger.warning({ "出现错误" }, e)
+                sendMessage("出现错误")
             }
         }
     }
@@ -301,62 +140,33 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                 }
                 sendMessage(rich)
             } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
+                logger.warning({ "出现错误" }, e)
+                sendMessage("出现错误")
             } finally {
                 logger.info { "卡片消息处理完成" }
             }
         }
     }
 
-    object RegisteredCommand : SimpleCommand(owner, primaryName = "registered", description = "查看已注册指令") {
-        @Handler
-        suspend fun UserCommandSender.handle() {
-            try {
-                val registered = CommandManager.allRegisteredCommands
-                val forward = buildForwardMessage(subject) {
-                    for (command in registered) {
-                        bot named command.owner.parentPermission.id.namespace says {
-                            appendLine("Id: ${command.permission.id}")
-                            appendLine("HasPermission: ${hasPermission(command.permission)}")
-                            appendLine("Description: ${command.description}")
-                            appendLine(command.usage)
-                        }
-                    }
-
-                    displayStrategy = object : ForwardMessage.DisplayStrategy {
-                        override fun generateTitle(forward: RawForwardMessage): String {
-                            return "已注册指令"
-                        }
-
-                        override fun generateSummary(forward: RawForwardMessage): String {
-                            return "已注册${registered.size}条指令"
-                        }
-                    }
-                }
-                sendMessage(forward + IgnoreLengthCheck)
-            } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
-            }
-        }
-    }
-
-    object DeviceInfoCommand : SimpleCommand(owner, primaryName = "device") {
+    object DeviceInfoCommand : SimpleCommand(owner, primaryName = "device", description = "设备信息") {
         @Handler
         suspend fun UserCommandSender.handle() {
             try {
                 val forward = buildForwardMessage(subject) {
                     var count = 0
+                    val json =  Json {
+                        ignoreUnknownKeys = true
+                        isLenient = true
+                        prettyPrint = true
+                    }
                     for (bot in Bot.instances) {
                         try {
-                            val json = DeviceInfoManager.serialize(info = bot.configuration.deviceInfo!!(bot), Json {
-                                ignoreUnknownKeys = true
-                                isLenient = true
-                                prettyPrint = true
-                            })
-                            bot says json
+                            val device = DeviceInfoManager.serialize(info = bot.configuration.deviceInfo!!(bot), json)
+                            bot says device
                             count++
                         } catch (cause: Throwable) {
-                            bot says cause.toString()
+                            logger.warning({ "出现错误" }, cause)
+                            bot says (cause.message ?: cause.toString())
                         }
                     }
 
@@ -372,7 +182,8 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                 }
                 sendMessage(forward + IgnoreLengthCheck)
             } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
+                logger.warning({ "出现错误" }, e)
+                sendMessage("出现错误")
             }
         }
     }

@@ -2,12 +2,12 @@ plugins {
     kotlin("jvm") version "1.6.0"
     kotlin("plugin.serialization") version "1.6.0"
 
-    id("net.mamoe.mirai-console") version "2.10.0-RC2"
-    id("net.mamoe.maven-central-publish") version "0.7.0"
+    id("net.mamoe.mirai-console") version "2.10.0"
+    id("net.mamoe.maven-central-publish") version "0.7.1"
 }
 
 group = "io.github.gnuf0rce"
-version = "1.2.1"
+version = "1.2.2"
 
 mavenCentralPublish {
     useCentralS01()
@@ -20,16 +20,14 @@ mavenCentralPublish {
 
 repositories {
     mavenLocal()
-    maven(url = "https://maven.aliyun.com/repository/central")
     mavenCentral()
-    maven(url = "https://maven.aliyun.com/repository/gradle-plugin")
     gradlePluginPortal()
 }
 
 dependencies {
-    compileOnly("net.mamoe:mirai-core:${mirai.coreVersion}")
-    compileOnly("net.mamoe:mirai-core-utils:${mirai.coreVersion}")
-    testImplementation(kotlin("test", kotlin.coreLibrariesVersion))
+    compileOnly("net.mamoe:mirai-core:2.10.0")
+    compileOnly("net.mamoe:mirai-core-utils:2.10.0")
+    testImplementation(kotlin("test", "1.6.0"))
 }
 
 kotlin {

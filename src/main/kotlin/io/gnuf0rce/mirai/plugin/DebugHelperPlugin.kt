@@ -6,9 +6,10 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.event.*
+import net.mamoe.mirai.utils.*
 
 object DebugHelperPlugin : KotlinPlugin(
-    JvmPluginDescription(id = "xyz.cssxsh.mirai.plugin.debug-helper", version = "1.2.1") {
+    JvmPluginDescription(id = "io.gnuf0rce.mirai.plugin.debug-helper", version = "1.2.2") {
         name("debug-helper")
         author("cssxsh")
     }
@@ -16,28 +17,21 @@ object DebugHelperPlugin : KotlinPlugin(
 
     override fun onEnable() {
         DebugSetting.reload()
-        DebugSetting.save()
-        DebugRequestEventData.reload()
-        DebugOnlineConfig.reload()
-        DebugOnlineConfig.save()
-        for (command in DebugCommands) {
-            command.register()
-        }
+        for (command in DebugCommands) command.register()
 
-        if (DebugSetting.owner != DebugSetting.OwnerDefault) {
-            logger.info("机器人所有者 ${DebugSetting.owner}")
-        } else {
-            logger.warning("机器人所有者 未设置")
-        }
-        logger.info("发送上线通知请使用 /perm add g群号 xyz.cssxsh.mirai.plugin.debug-helper:online.include 赋予权限")
+        logger.warning { "本插件中机器人管理的相关功能已经拆分至 https://github.com/cssxsh/mirai-administrator" }
+        logger.warning { "本插件中机器人管理的相关功能已经拆分至 https://github.com/cssxsh/mirai-administrator" }
+        logger.warning { "本插件中机器人管理的相关功能已经拆分至 https://github.com/cssxsh/mirai-administrator" }
 
-        DebugListener.registerTo(globalEventChannel())
+        if (DebugSetting.autoDownloadMessage) {
+            logger.info { "自动保存特殊消息内容开启" }
+            DebugMessageDownloader.registerTo(globalEventChannel())
+        }
     }
 
     override fun onDisable() {
-        DebugListener.cancelAll()
-        for (command in DebugCommands) {
-            command.unregister()
-        }
+        DebugMessageDownloader.cancelAll()
+
+        for (command in DebugCommands) command.unregister()
     }
 }
