@@ -23,20 +23,22 @@
 `[...]`表示参数，当`[...]`后面带`?`时表示参数可选  
 `{...}`表示连续的多个参数
 
-本插件指令权限ID 格式为 `io.gnuf0rce.mirai.plugin.debug-helper:command.*`, `*` 是指令的第一指令名  
-例如 `/device` 的权限ID为 `io.gnuf0rce.mirai.plugin.debug-helper:command.device`
+本插件指令权限ID 格式为 `io.github.gnuf0rce.debug-helper:command.*`, `*` 是指令的第一指令名  
+例如 `/device` 的权限ID为 `io.github.gnuf0rce.debug-helper:command.device`  
+插件启动后将会备份一次数据
 
 ### DebugCommands
 
-| 指令                                           | 描述              |
-|:---------------------------------------------|:----------------|
-| `/<at-all> [text] [group]?`                  | 向指定群发送AtAll     |
-| `/<gc>`                                      | 主动触发 JVM GC     |
-| `/<random-image> [contact]?`                 | 随机发送一张图片        |
-| `/<forward> [contact] [title]?`              | 转发消息，句号结束       |
-| `/<fork> [contact] {codes}`                  | 从mirai-code构造消息 |
-| `/<rich> [content]`                          | 构造卡片消息          |
-| `/<device>`                                  | 查看 Bot 设备信息     |
+| 指令                              | 描述              |
+|:--------------------------------|:----------------|
+| `/<at-all> [text] [group]?`     | 向指定群发送AtAll     |
+| `/<gc>`                         | 主动触发 JVM GC     |
+| `/<random-image> [contact]?`    | 随机发送一张图片        |
+| `/<forward> [contact] [title]?` | 转发消息，句号结束       |
+| `/<fork> [contact] {codes}`     | 从mirai-code构造消息 |
+| `/<rich> [content]`             | 构造卡片消息          |
+| `/<device>`                     | 查看 Bot 设备信息     |
+| `/<backup-data>`                | 备份数据            |
 
 ### DebugSetting
 

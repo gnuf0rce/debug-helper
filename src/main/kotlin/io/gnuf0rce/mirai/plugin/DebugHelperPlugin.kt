@@ -4,9 +4,15 @@ import io.gnuf0rce.mirai.plugin.command.*
 import io.gnuf0rce.mirai.plugin.data.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
+import net.mamoe.mirai.console.extension.*
+import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.utils.*
+import java.io.*
+import java.nio.file.*
+import java.time.*
+import java.util.zip.*
 
 object DebugHelperPlugin : KotlinPlugin(
     JvmPluginDescription(id = "io.gnuf0rce.mirai.plugin.debug-helper", version = "1.2.2") {
@@ -14,6 +20,38 @@ object DebugHelperPlugin : KotlinPlugin(
         author("cssxsh")
     }
 ) {
+
+    fun backup(): File = synchronized(PluginManager) {
+        val root = PluginManager.pluginsPath.parent
+        val backup = root.resolve("backup/${LocalDate.now()}.${System.currentTimeMillis()}.zip").toFile()
+        backup.parentFile.mkdirs()
+        val extensions = listOf("json", "yml")
+        val buffer = 1 shl 23
+        val buffered = backup.outputStream().buffered(buffer)
+        ZipOutputStream(buffered).use { output ->
+            for (path: Path in listOf(PluginManager.pluginsConfigPath, PluginManager.pluginsDataPath, root.resolve("bots"))) {
+                val begin = path.nameCount - 1
+                for (folder in path.toFile().listFiles() ?: continue) {
+                    for (file in folder.listFiles() ?: continue) {
+                        if (!file.isFile) continue
+                        if (file.extension !in extensions) continue
+                        if (file.length() > buffer) continue
+
+                        val current = file.toPath()
+                        val name = current.subpath(begin, current.nameCount).toString()
+                        output.putNextEntry(ZipEntry(name).apply { time = file.lastModified() })
+                        file.inputStream().use { input -> input.transferTo(output) }
+                        output.flush()
+                    }
+                }
+            }
+        }
+        buffered.close()
+
+        backup
+    }
+
+    override fun PluginComponentStorage.onLoad() { backup() }
 
     override fun onEnable() {
         DebugSetting.reload()

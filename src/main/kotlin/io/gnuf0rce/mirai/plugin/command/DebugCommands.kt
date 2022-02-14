@@ -154,7 +154,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
             try {
                 val forward = buildForwardMessage(subject) {
                     var count = 0
-                    val json =  Json {
+                    val json = Json {
                         ignoreUnknownKeys = true
                         isLenient = true
                         prettyPrint = true
@@ -181,6 +181,19 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
                     }
                 }
                 sendMessage(forward + IgnoreLengthCheck)
+            } catch (e: Throwable) {
+                logger.warning({ "出现错误" }, e)
+                sendMessage("出现错误")
+            }
+        }
+    }
+
+    object BackupCommand : SimpleCommand(owner, primaryName = "backup-data", description = "备份数据") {
+        @Handler
+        suspend fun CommandSender.handle() {
+            try {
+                val path = DebugHelperPlugin.backup().path
+                sendMessage("Mirai-Console-Data 备份至 $path")
             } catch (e: Throwable) {
                 logger.warning({ "出现错误" }, e)
                 sendMessage("出现错误")
