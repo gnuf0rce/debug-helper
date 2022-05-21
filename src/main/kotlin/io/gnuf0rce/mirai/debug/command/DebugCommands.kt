@@ -1,7 +1,7 @@
-package io.gnuf0rce.mirai.plugin.command
+package io.gnuf0rce.mirai.debug.command
 
-import io.gnuf0rce.mirai.plugin.*
-import io.gnuf0rce.mirai.plugin.data.*
+import io.gnuf0rce.mirai.debug.*
+import io.gnuf0rce.mirai.debug.data.*
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
