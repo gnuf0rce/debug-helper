@@ -1,4 +1,4 @@
-package io.gnuf0rce.mirai.debug.data
+package io.github.gnuf0rce.mirai.debug.data
 
 import net.mamoe.mirai.console.data.*
 

@@ -1,4 +1,4 @@
-package io.gnuf0rce.mirai.debug
+package io.github.gnuf0rce.mirai.debug
 
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
