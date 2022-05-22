@@ -119,8 +119,7 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
     object RichCommand : SimpleCommand(owner, primaryName = "rich", description = "构造卡片消息") {
-        private val SERVICE_ID = """(?<=serviceID=")\d+"""
-            .toRegex(setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
+        private val SERVICE_ID = """(?im)(?<=serviceID=")\d+""".toRegex()
 
         @Handler
         suspend fun CommandSenderOnMessage<*>.handle(content: String) {
