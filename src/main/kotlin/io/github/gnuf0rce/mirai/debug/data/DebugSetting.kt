@@ -19,6 +19,6 @@ object DebugSetting : ReadOnlyPluginConfig("DebugSetting") {
     val autoDownloadMessage by value(false)
 
     @ValueName("random_image_api")
-    @ValueDescription("随即图片API by https://rainchan.win/projects/pximg")
+    @ValueDescription("随机图片API by https://rainchan.win/projects/pximg")
     val randomImageApi by value("https://pximg.rainchan.win/img")
 }

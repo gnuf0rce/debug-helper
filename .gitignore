@@ -1,7 +1,7 @@
 # User-specific stuff
 .idea/
 
-test/
+./test/
 
 *.iml
 *.ipr

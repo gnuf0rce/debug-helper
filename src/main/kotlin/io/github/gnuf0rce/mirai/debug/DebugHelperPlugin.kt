@@ -25,21 +25,22 @@ import java.time.*
 import java.util.zip.*
 
 object DebugHelperPlugin : KotlinPlugin(
-    JvmPluginDescription(id = "io.github.gnuf0rce.debug-helper", version = "1.3.0") {
+    JvmPluginDescription(id = "io.github.gnuf0rce.debug-helper", version = "1.3.1") {
         name("debug-helper")
         author("cssxsh")
     }
 ) {
 
-    fun backup(): File = synchronized(PluginManager) {
+    fun backup(): File {
         val root = PluginManager.pluginsPath.parent
         val backup = root.resolve("backup/${LocalDate.now()}.${System.currentTimeMillis()}.zip").toFile()
         backup.parentFile.mkdirs()
         val extensions = listOf("json", "yml")
+        val paths = listOf(PluginManager.pluginsConfigPath, PluginManager.pluginsDataPath, root.resolve("bots"))
         val buffer = 1 shl 23
         val buffered = backup.outputStream().buffered(buffer)
         ZipOutputStream(buffered).use { output ->
-            for (path: Path in listOf(PluginManager.pluginsConfigPath, PluginManager.pluginsDataPath, root.resolve("bots"))) {
+            for (path: Path in paths) {
                 val begin = path.nameCount - 1
                 for (folder in path.toFile().listFiles() ?: continue) {
                     for (file in folder.listFiles() ?: continue) {
@@ -58,7 +59,7 @@ object DebugHelperPlugin : KotlinPlugin(
         }
         buffered.close()
 
-        backup
+        return backup
     }
 
     override fun PluginComponentStorage.onLoad() { backup() }
