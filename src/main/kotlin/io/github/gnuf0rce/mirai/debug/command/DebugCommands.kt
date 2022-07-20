@@ -26,7 +26,7 @@ import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.message.flags.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.code.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
@@ -233,6 +233,13 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
             val message = classLoader.urLs.joinToString(separator = "\n", prefix = "$classLoader: \n")
             sendMessage(message)
+        }
+    }
+
+    object PropertyCommand : SimpleCommand(owner, primaryName = "system-property", description = "System.setProperty") {
+        @Handler
+        fun CommandSender.handle(key: String, value: String) {
+            System.setProperty(key, value)
         }
     }
 }
