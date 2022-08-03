@@ -12,6 +12,7 @@ package io.github.gnuf0rce.mirai.debug
 
 import io.github.gnuf0rce.mirai.debug.command.*
 import io.github.gnuf0rce.mirai.debug.data.*
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.extension.*
@@ -25,18 +26,17 @@ import java.time.*
 import java.util.zip.*
 
 object DebugHelperPlugin : KotlinPlugin(
-    JvmPluginDescription(id = "io.github.gnuf0rce.debug-helper", version = "1.3.1") {
+    JvmPluginDescription(id = "io.github.gnuf0rce.debug-helper", version = "1.3.2") {
         name("debug-helper")
         author("cssxsh")
     }
 ) {
 
     fun backup(): File {
-        val root = PluginManager.pluginsPath.parent
-        val backup = root.resolve("backup/${LocalDate.now()}.${System.currentTimeMillis()}.zip").toFile()
+        val backup = File("./backup/${LocalDate.now()}.${System.currentTimeMillis()}.zip")
         backup.parentFile.mkdirs()
         val extensions = listOf("json", "yml")
-        val paths = listOf(PluginManager.pluginsConfigPath, PluginManager.pluginsDataPath, root.resolve("bots"))
+        val paths = listOf(PluginManager.pluginsConfigPath, PluginManager.pluginsDataPath, Path.of("./bots"))
         val buffer = 1 shl 23
         val buffered = backup.outputStream().buffered(buffer)
         ZipOutputStream(buffered).use { output ->
@@ -80,7 +80,7 @@ object DebugHelperPlugin : KotlinPlugin(
     }
 
     override fun onDisable() {
-        DebugMessageDownloader.cancelAll()
+        DebugMessageDownloader.cancel()
 
         for (command in DebugCommands) command.unregister()
     }

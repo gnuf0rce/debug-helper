@@ -246,8 +246,9 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
 
     object PropertyCommand : SimpleCommand(owner, primaryName = "system-property", description = "System.setProperty") {
         @Handler
-        fun CommandSender.handle(key: String, value: String) {
+        suspend fun CommandSender.handle(key: String, value: String) {
             System.setProperty(key, value)
+            sendMessage("$key - $value  设置完成")
         }
     }
 }
