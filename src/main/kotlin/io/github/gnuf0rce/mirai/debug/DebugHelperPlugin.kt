@@ -74,6 +74,7 @@ object DebugHelperPlugin : KotlinPlugin(
 
         if (DebugSetting.autoDownloadMessage) {
             logger.info { "自动保存特殊消息内容开启" }
+            DebugMessageDownloader.folder = DebugHelperPlugin.dataFolder
             DebugMessageDownloader.registerTo(globalEventChannel())
         }
     }

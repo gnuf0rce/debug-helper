@@ -13,7 +13,10 @@ package io.github.gnuf0rce.mirai.debug.command
 import io.github.gnuf0rce.mirai.debug.*
 import io.github.gnuf0rce.mirai.debug.data.*
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.okhttp.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.compression.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
@@ -22,7 +25,6 @@ import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
@@ -30,7 +32,7 @@ import net.mamoe.mirai.internal.message.flags.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.code.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
-import java.io.*
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.net.*
 import kotlin.system.*
 
@@ -67,26 +69,32 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
     }
 
     object ImageCommand : SimpleCommand(owner, primaryName = "random-image", description = "随机图片") {
-        private val http = HttpClient(OkHttp)
+        private val http = HttpClient(OkHttp) {
+            CurlUserAgent()
+            ContentEncoding()
+        }
 
         private val randomImageApi get() = DebugSetting.randomImageApi
 
         @Handler
         suspend fun CommandSender.handle(contact: Contact = subject as Contact) {
+            val resource = http.get(randomImageApi).body<ByteArray>().toExternalResource()
             val message = try {
                 val image: Image
-                val upload = http.get<InputStream>(randomImageApi).use { input ->
-                    measureTimeMillis {
-                        image = contact.uploadImage(input)
-                    }
+                val upload = measureTimeMillis {
+                    image = contact.uploadImage(resource)
                 }
                 val send = measureTimeMillis {
                     contact.sendMessage(image)
                 }
                 "upload: ${upload}ms, send: ${send}ms, url: ${image.queryUrl()}"
-            } catch (e: Throwable) {
-                logger.warning({ "出现错误" }, e)
+            } catch (cause: Throwable) {
+                logger.warning({ "出现错误" }, cause)
                 "出现错误"
+            } finally {
+                runInterruptible(Dispatchers.IO) {
+                    resource.close()
+                }
             }
 
             sendMessage(message)

@@ -11,44 +11,52 @@
 package io.github.gnuf0rce.mirai.debug
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.okhttp.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.compression.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
-import net.mamoe.mirai.console.util.MessageUtils.firstContentOrNull
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.*
+import java.io.File
 
 object DebugMessageDownloader : SimpleListenerHost() {
 
-    private val logger get() = DebugHelperPlugin.logger
+    private val logger: MiraiLogger = MiraiLogger.Factory.create(this::class, "debug-helper.downloader")
 
-    private val http = HttpClient(OkHttp)
+    private val http = HttpClient(OkHttp) {
+        CurlUserAgent()
+        ContentEncoding()
+    }
 
-    private val folder get() = DebugHelperPlugin.dataFolder
+    internal var folder = File("./cache")
 
     private fun download(message: MessageChain) = launch(SupervisorJob()) {
-        when (val target = message.firstContentOrNull()) {
+        when (val target = message.findIsInstance<MessageContent>()) {
             is FlashImage -> {
                 try {
-                    folder.resolve("flash")
+                    val url = target.image.queryUrl()
+                    val file = folder.resolve("flash")
                         .resolve("${message.source.fromId}")
                         .resolve(target.image.imageId)
-                        .apply { parentFile.mkdirs() }
-                        .writeBytes(http.get(target.image.queryUrl()))
+                    file.parentFile.mkdirs()
+                    file.writeBytes(http.get(url).body())
                 } catch (cause: Throwable) {
                     logger.warning({ "$target 下载失败" }, cause)
                 }
             }
             is OnlineAudio -> {
                 try {
-                    folder.resolve("audio")
+                    val url = target.urlForDownload
+                    val file = folder.resolve("audio")
                         .resolve("${message.source.fromId}")
                         .resolve(target.filename)
-                        .apply { parentFile.mkdirs() }
-                        .writeBytes(http.get(target.urlForDownload))
+                    file.parentFile.mkdirs()
+                    file.writeBytes(http.get(url).body())
                 } catch (cause: Throwable) {
                     logger.warning({ "$target 下载失败" }, cause)
                 }
@@ -60,11 +68,11 @@ object DebugMessageDownloader : SimpleListenerHost() {
                         '{' -> "json"
                         else -> "rich"
                     }
-                    folder.resolve("service")
+                    val file = folder.resolve("service")
                         .resolve("${message.source.fromId}")
                         .resolve("${message.source.time}.${format}")
-                        .apply { parentFile.mkdirs() }
-                        .writeText(target.content)
+                    file.parentFile.mkdirs()
+                    file.writeText(target.content)
                 } catch (cause: Throwable) {
                     logger.warning({ "$target 下载失败" }, cause)
                 }
