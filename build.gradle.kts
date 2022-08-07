@@ -12,7 +12,7 @@ version = "1.3.2"
 mavenCentralPublish {
     useCentralS01()
     singleDevGithubProject("gnuf0rce", "debug-helper", "cssxsh")
-    licenseFromGitHubProject("AGPL-3.0", "master")
+    licenseFromGitHubProject("AGPL-3.0")
     workingDir = System.getenv("PUBLICATION_TEMP")?.let { file(it).resolve(projectName) }
         ?: project.buildDir.resolve("publishing-tmp")
     publication {
