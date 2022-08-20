@@ -34,10 +34,9 @@ import net.mamoe.mirai.message.code.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.net.*
-import kotlin.system.*
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
-object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-command") {
+object DebugCommands {
 
     private val all: List<Command> by lazy { this::class.nestedClasses.mapNotNull { it.objectInstance as? Command } }
 
@@ -81,10 +80,10 @@ object DebugCommands : CoroutineScope by DebugHelperPlugin.childScope("debug-com
             val resource = http.get(randomImageApi).body<ByteArray>().toExternalResource()
             val message = try {
                 val image: Image
-                val upload = measureTimeMillis {
+                val upload = kotlin.system.measureTimeMillis {
                     image = contact.uploadImage(resource)
                 }
-                val send = measureTimeMillis {
+                val send = kotlin.system.measureTimeMillis {
                     contact.sendMessage(image)
                 }
                 "upload: ${upload}ms, send: ${send}ms, url: ${image.queryUrl()}"
