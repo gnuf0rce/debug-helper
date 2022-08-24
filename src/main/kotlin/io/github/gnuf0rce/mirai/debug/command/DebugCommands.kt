@@ -250,4 +250,26 @@ object DebugCommands {
             sendMessage("$key - $value  设置完成")
         }
     }
+
+    object CookieCommand : SimpleCommand(owner, primaryName = "cookie", description = "Bot Cookie") {
+        @Handler
+        suspend fun CommandSender.handle() {
+            sendMessage(buildMessageChain {
+                for (bot in Bot.instances) {
+                    appendLine("=== ${bot.id} ===")
+
+                    bot as net.mamoe.mirai.internal.QQAndroidBot
+                    val info = bot.client.wLoginSigInfo
+
+                    appendLine("bkn: ${info.bkn}")
+                    appendLine("sKey: ${info.sKey.data.decodeToString()}")
+                    appendLine("psKey: ")
+
+                    for ((host, value) in info.psKeyMap) {
+                        appendLine("    $host - ${value.data.decodeToString()}")
+                    }
+                }
+            })
+        }
+    }
 }
