@@ -121,3 +121,5 @@ run/
 
 # Local Test Launch point
 debug-sandbox
+
+src/test/kotlin/GroupActiveProtocol.kt

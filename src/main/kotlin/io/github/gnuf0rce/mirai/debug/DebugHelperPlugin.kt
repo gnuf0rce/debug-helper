@@ -12,6 +12,7 @@ package io.github.gnuf0rce.mirai.debug
 
 import io.github.gnuf0rce.mirai.debug.command.*
 import io.github.gnuf0rce.mirai.debug.data.*
+import io.github.gnuf0rce.mirai.debug.transformer.*
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
@@ -62,6 +63,22 @@ object DebugHelperPlugin : KotlinPlugin(
         return backup
     }
 
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    fun change() {
+        try {
+            if (!net.mamoe.mirai.internal.utils.StructureToStringTransformer.available) {
+                val clazz = net.mamoe.mirai.internal.utils.StructureToStringTransformer.Companion::class.java
+                val delegate = clazz.getDeclaredField("instance\$delegate").apply { isAccessible = true }
+                val lazy = delegate.get(null)
+                val value = lazy::class.java.getDeclaredField("_value").apply { isAccessible = true }
+                value.set(lazy, StructureToStringTransformerLegacy())
+            }
+        } catch (cause: Throwable) {
+            logger.warning("替换失败", cause)
+        }
+
+    }
+
     override fun PluginComponentStorage.onLoad() { backup() }
 
     override fun onEnable() {
@@ -77,6 +94,7 @@ object DebugHelperPlugin : KotlinPlugin(
             DebugMessageDownloader.folder = DebugHelperPlugin.dataFolder
             DebugMessageDownloader.registerTo(globalEventChannel())
         }
+        change()
     }
 
     override fun onDisable() {
