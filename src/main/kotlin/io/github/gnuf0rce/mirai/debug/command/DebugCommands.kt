@@ -268,25 +268,29 @@ object DebugCommands {
             val cache = loader::class.java.getDeclaredField("pluginFileToInstanceMap")
                 .apply { isAccessible = true }
                 .get(loader) as MutableMap<File, JvmPlugin>
-            val permissions = PermissionService.INSTANCE.javaClass.getDeclaredField("permissions")
-                .apply { isAccessible = true }
-                .get(PermissionService.INSTANCE) as MutableMap<*, *>
 
             PluginManager.disablePlugin(plugin = plugin)
             try {
                 plugin.cancel()
-            } catch (_: Exception) {
-                //
+            } catch (cause: Exception) {
+                logger.warning({ "jvm plugin $id cancel throw exception." }, cause)
             }
             plugins.remove(plugin)
             try {
+                val permissions = PermissionService.INSTANCE.javaClass.getDeclaredField("permissions")
+                    .apply { isAccessible = true }
+                    .get(PermissionService.INSTANCE) as MutableMap<*, *>
                 permissions.remove(plugin.parentPermission.id)
                 permissions.remove(plugin.parentPermission.id.run { "$namespace.$name" })
-            } catch (_: Exception) {
-                //
+            } catch (cause: Exception) {
+                logger.warning({ "jvm plugin $id permission remove exception." }, cause)
             }
-            runInterruptible(Dispatchers.IO) {
-                classLoader.close()
+            try {
+                runInterruptible(Dispatchers.IO) {
+                    classLoader.close()
+                }
+            } catch (cause: Exception) {
+                logger.warning({ "jvm plugin $id class loader close exception." }, cause)
             }
             cache.remove(jar)
             loader.classLoaders.remove(classLoader)
