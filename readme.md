@@ -29,16 +29,18 @@
 
 ### DebugCommands
 
-| 指令                              | 描述              |
-|:--------------------------------|:----------------|
-| `/<at-all> [text] [group]?`     | 向指定群发送AtAll     |
-| `/<gc>`                         | 主动触发 JVM GC     |
-| `/<random-image> [contact]?`    | 随机发送一张图片        |
-| `/<forward> [contact] [title]?` | 转发消息，句号结束       |
-| `/<fork> [contact] {codes}`     | 从mirai-code构造消息 |
-| `/<rich> [content]`             | 构造卡片消息          |
-| `/<device>`                     | 查看 Bot 设备信息     |
-| `/<backup-data>`                | 备份数据            |
+| 指令                                 | 描述                 |
+|:-----------------------------------|:-------------------|
+| `/<at-all> [text] [group]?`        | 向指定群发送 AtAll       |
+| `/<gc>`                            | 主动触发 JVM GC        |
+| `/<random-image> [contact]?`       | 随机发送一张图片           |
+| `/<forward> [contact] [title]?`    | 转发消息，句号结束          |
+| `/<fork> [contact] {codes}`        | 从mirai-code构造消息    |
+| `/<rich> [content]`                | 构造卡片消息             |
+| `/<device>`                        | 查看 Bot 设备信息        |
+| `/<backup-data>`                   | 备份数据               |
+| `/<reload> [id]`                   | 热重载插件              |
+| `/<system-property> [key] [value]` | 设置 system-property |
 
 ### DebugSetting
 

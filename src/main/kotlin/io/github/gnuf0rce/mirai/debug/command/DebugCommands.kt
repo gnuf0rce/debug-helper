@@ -57,8 +57,8 @@ object DebugCommands {
             try {
                 val message = AtAll + text + ForceAsLongMessage
                 group.sendMessage(message)
-            } catch (e: Throwable) {
-                logger.warning({ "'${text}'发送失败" }, e)
+            } catch (cause: Exception) {
+                logger.warning({ "'${text}'发送失败" }, cause)
                 sendMessage("'${text}'发送失败")
             }
         }
@@ -92,7 +92,7 @@ object DebugCommands {
                     contact.sendMessage(image)
                 }
                 "upload: ${upload}ms, send: ${send}ms, url: ${image.queryUrl()}"
-            } catch (cause: Throwable) {
+            } catch (cause: Exception) {
                 logger.warning({ "出现错误" }, cause)
                 "出现错误"
             } finally {
@@ -118,8 +118,9 @@ object DebugCommands {
                 contact.sendMessage(nodes.toForwardMessage(object : ForwardMessage.DisplayStrategy {
                     override fun generateTitle(forward: RawForwardMessage): String = title
                 }))
-            } catch (e: Throwable) {
-                sendMessage("出现错误 $e")
+            } catch (cause: Exception) {
+                logger.warning({ "出现错误" }, cause)
+                sendMessage("出现错误")
             }
         }
     }
@@ -136,8 +137,8 @@ object DebugCommands {
                         logger.info { "$code 已处理" }
                     }
                 }
-            } catch (e: Throwable) {
-                logger.warning({ "出现错误" }, e)
+            } catch (cause: Exception) {
+                logger.warning({ "出现错误" }, cause)
                 sendMessage("出现错误")
             }
         }
@@ -163,8 +164,8 @@ object DebugCommands {
                     else -> throw IllegalArgumentException("Not is json or xml with \\x${char.code.toString(16)}")
                 }
                 sendMessage(rich)
-            } catch (e: Throwable) {
-                logger.warning({ "出现错误" }, e)
+            } catch (cause: Exception) {
+                logger.warning({ "出现错误" }, cause)
                 sendMessage("出现错误")
             } finally {
                 logger.info { "卡片消息处理完成" }
@@ -188,7 +189,7 @@ object DebugCommands {
                             val device = DeviceInfoManager.serialize(info = bot.configuration.deviceInfo!!(bot), json)
                             bot says device
                             count++
-                        } catch (cause: Throwable) {
+                        } catch (cause: Exception) {
                             logger.warning({ "出现错误" }, cause)
                             bot says (cause.message ?: cause.toString())
                         }
@@ -205,8 +206,8 @@ object DebugCommands {
                     }
                 }
                 sendMessage(forward + IgnoreLengthCheck)
-            } catch (e: Throwable) {
-                logger.warning({ "出现错误" }, e)
+            } catch (cause: Exception) {
+                logger.warning({ "出现错误" }, cause)
                 sendMessage("出现错误")
             }
         }
@@ -218,8 +219,8 @@ object DebugCommands {
             try {
                 val path = DebugHelperPlugin.backup().path
                 sendMessage("Mirai-Console-Data 备份至 $path")
-            } catch (e: Throwable) {
-                logger.warning({ "出现错误" }, e)
+            } catch (cause: Exception) {
+                logger.warning({ "出现错误" }, cause)
                 sendMessage("出现错误")
             }
         }
@@ -331,10 +332,14 @@ object DebugCommands {
                     appendLine("bkn: ${info.bkn}")
                     appendLine("sKey: ${info.sKey.data.decodeToString()}")
                     appendLine("psKey: ")
-
                     for ((host, value) in info.psKeyMap) {
                         appendLine("    $host - ${value.data.decodeToString()}")
                     }
+                    appendLine("pt4Token: ")
+                    for ((host, value) in info.pt4TokenMap) {
+                        appendLine("    $host - ${value.data.decodeToString()}")
+                    }
+                    appendLine("payToken: ${info.payToken.toUHexString()}")
                 }
             })
         }

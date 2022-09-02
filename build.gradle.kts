@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.github.gnuf0rce"
-version = "1.3.2"
+version = "1.3.3"
 
 mavenCentralPublish {
     useCentralS01()
@@ -27,6 +27,7 @@ repositories {
 
 dependencies {
     compileOnly("net.mamoe:mirai-core:2.13.0-M1")
+    compileOnly("net.mamoe:mirai-core-utils:2.13.0-M1")
     implementation("io.ktor:ktor-client-okhttp:2.1.0") {
         exclude(group = "org.jetbrains.kotlin")
         exclude(group = "org.jetbrains.kotlinx")
