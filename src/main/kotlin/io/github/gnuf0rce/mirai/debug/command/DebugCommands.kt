@@ -21,18 +21,23 @@ import io.ktor.client.request.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
 import net.mamoe.mirai.*
+import net.mamoe.mirai.console.*
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.internal.plugin.*
+import net.mamoe.mirai.console.internal.util.*
+import net.mamoe.mirai.console.permission.*
 import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.internal.message.flags.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.code.*
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import java.io.*
 import java.net.*
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
@@ -240,6 +245,68 @@ object DebugCommands {
 
             val message = classLoader.urLs.joinToString(separator = "\n", prefix = "$classLoader: \n")
             sendMessage(message)
+        }
+    }
+
+    object ReLoadCommand : SimpleCommand(owner, primaryName = "reload", description = "reload plugin") {
+        @OptIn(ConsoleFrontEndImplementation::class)
+        @Suppress("UNCHECKED_CAST")
+        @Handler
+        suspend fun CommandSender.handle(id: String) {
+            val plugins = (MiraiConsole.pluginManager as PluginManagerImpl).resolvedPlugins
+            val loader = MiraiConsoleImplementation.getInstance().jvmPluginLoader as BuiltInJvmPluginLoaderImpl
+
+            val plugin = plugins.filterIsInstance<AbstractJvmPlugin>()
+                .find { it.id == id || it.name == id }
+                ?: kotlin.run {
+                    sendMessage("jvm plugin $id not found.")
+                    return
+                }
+            val classLoader = plugin.javaClass.classLoader as JvmPluginClassLoaderN
+            val jar = classLoader.file
+            val cache = loader::class.java.getDeclaredField("pluginFileToInstanceMap")
+                .apply { isAccessible = true }
+                .get(loader) as MutableMap<File, JvmPlugin>
+            val permissions = PermissionService.INSTANCE.javaClass.getDeclaredField("permissions")
+                .apply { isAccessible = true }
+                .get(PermissionService.INSTANCE) as MutableMap<*, *>
+
+            PluginManager.disablePlugin(plugin = plugin)
+            try {
+                plugin.cancel()
+            } catch (_: Exception) {
+                //
+            }
+            plugins.remove(plugin)
+            try {
+                permissions.remove(plugin.parentPermission.id)
+                permissions.remove(plugin.parentPermission.id.run { "$namespace.$name" })
+            } catch (_: Exception) {
+                //
+            }
+            runInterruptible(Dispatchers.IO) {
+                classLoader.close()
+            }
+            cache.remove(jar)
+            loader.classLoaders.remove(classLoader)
+
+            val newClassLoader = JvmPluginClassLoaderN.newLoader(jar, loader.jvmPluginLoadingCtx)
+            loader.classLoaders.add(newClassLoader)
+            // exportManagers
+            val newPlugin = with(PluginServiceHelper) {
+                val single = newClassLoader.findServices(JvmPlugin::class, KotlinPlugin::class, JavaPlugin::class)
+                    .loadAllServices().single()
+
+                newClassLoader.linkedLogger = single.logger
+                cache[jar] = single
+                single
+            }
+            plugins.add(newPlugin)
+            PluginManager.loadPlugin(plugin = newPlugin)
+            PluginManager.enablePlugin(plugin = newPlugin)
+
+
+            sendMessage("jvm plugin $id reloaded.")
         }
     }
 
