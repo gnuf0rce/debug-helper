@@ -273,7 +273,7 @@ object DebugCommands {
             try {
                 plugin.cancel()
             } catch (cause: Exception) {
-                logger.warning({ "jvm plugin $id cancel throw exception." }, cause)
+                logger.error({ "jvm plugin $id cancel throw exception." }, cause)
             }
             plugins.remove(plugin)
             try {
@@ -283,19 +283,23 @@ object DebugCommands {
                 permissions.remove(plugin.parentPermission.id)
                 permissions.remove(plugin.parentPermission.id.run { "$namespace.$name" })
             } catch (cause: Exception) {
-                logger.warning({ "jvm plugin $id permission remove exception." }, cause)
+                logger.error({ "jvm plugin $id permission remove exception." }, cause)
             }
             try {
                 runInterruptible(Dispatchers.IO) {
                     classLoader.close()
                 }
             } catch (cause: Exception) {
-                logger.warning({ "jvm plugin $id class loader close exception." }, cause)
+                logger.error({ "jvm plugin $id class loader close exception." }, cause)
             }
             cache.remove(jar)
             loader.classLoaders.remove(classLoader)
 
-            val newClassLoader = JvmPluginClassLoaderN.newLoader(jar, loader.jvmPluginLoadingCtx)
+            val name = jar.name.substringBefore('-')
+            val newJar = jar.parentFile
+                .listFiles { _, filename -> filename.startsWith(name) }
+                .maxBy { it.lastModified() }
+            val newClassLoader = JvmPluginClassLoaderN.newLoader(newJar, loader.jvmPluginLoadingCtx)
             loader.classLoaders.add(newClassLoader)
             // exportManagers
             val newPlugin = with(PluginServiceHelper) {
