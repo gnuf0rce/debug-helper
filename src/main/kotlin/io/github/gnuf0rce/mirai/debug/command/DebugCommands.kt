@@ -322,8 +322,13 @@ object DebugCommands {
     object PropertyCommand : SimpleCommand(owner, primaryName = "system-property", description = "System.setProperty") {
         @Handler
         suspend fun CommandSender.handle(key: String, value: String) {
-            System.setProperty(key, value)
-            sendMessage("$key - $value  设置完成")
+            if (value != "null") {
+                System.setProperty(key, value)
+                sendMessage("$key - $value 设置完成")
+            } else {
+                System.clearProperty(key)
+                sendMessage("$key 移除完成")
+            }
         }
     }
 
