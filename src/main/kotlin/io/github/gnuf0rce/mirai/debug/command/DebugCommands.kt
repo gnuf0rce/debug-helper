@@ -84,7 +84,7 @@ object DebugCommands {
         @Handler
         suspend fun CommandSender.handle(contact: Contact = subject as Contact) {
             val resource = http.get(randomImageApi).body<ByteArray>().toExternalResource()
-            val message = try {
+            try {
                 val image: Image
                 val upload = kotlin.system.measureTimeMillis {
                     image = contact.uploadImage(resource)
@@ -92,17 +92,14 @@ object DebugCommands {
                 val send = kotlin.system.measureTimeMillis {
                     contact.sendMessage(image)
                 }
-                "upload: ${upload}ms, send: ${send}ms, url: ${image.queryUrl()}"
+                logger.info { "size: ${resource.size} upload: ${upload}ms, send: ${send}ms, url: ${image.queryUrl()}" }
             } catch (cause: Exception) {
                 logger.warning({ "出现错误" }, cause)
-                "出现错误"
             } finally {
                 runInterruptible(Dispatchers.IO) {
                     resource.close()
                 }
             }
-
-            sendMessage(message)
         }
     }
 
