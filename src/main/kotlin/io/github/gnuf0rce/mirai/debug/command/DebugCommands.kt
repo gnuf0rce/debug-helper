@@ -23,6 +23,7 @@ import kotlinx.serialization.json.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.console.*
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.internal.plugin.*
 import net.mamoe.mirai.console.internal.util.*
 import net.mamoe.mirai.console.permission.*
@@ -246,6 +247,42 @@ object DebugCommands {
 
             val message = classLoader.urLs.joinToString(separator = "\n", prefix = "$classLoader: \n")
             sendMessage(message)
+        }
+    }
+
+    object DependencyCommand : SimpleCommand(owner, primaryName = "dependency", description = "reload plugin") {
+        @OptIn(ConsoleFrontEndImplementation::class)
+        @Handler
+        suspend fun CommandSender.handle() {
+            if (isConsole()) throw CommandArgumentParserException("isConsole")
+            val message = buildMessageChain {
+                appendLine("=== shared libraries ===")
+                val loader = MiraiConsoleImplementation.getInstance().jvmPluginLoader as BuiltInJvmPluginLoaderImpl
+                for (dep in loader.jvmPluginLoadingCtx.sharedLibrariesDependencies) {
+                    appendLine(dep)
+                }
+                for (plugin in MiraiConsole.pluginManager.plugins) {
+                    if (plugin !is JvmPlugin) continue
+                    appendLine("=== ${plugin.id} ${plugin.version} ===")
+                    val classLoader = plugin.javaClass.classLoader as JvmPluginClassLoaderN
+                    appendLine("--- depend ---")
+                    for (dependency in classLoader.dependencies) {
+                        for (dep in dependency.sharedClLoadedDependencies) {
+                            appendLine(dep)
+                        }
+                    }
+                    appendLine("--- shared ---")
+                    for (dep in classLoader.sharedClLoadedDependencies) {
+                        appendLine(dep)
+                    }
+                    appendLine("--- private ---")
+                    for (dep in classLoader.privateClLoadedDependencies) {
+                        appendLine(dep)
+                    }
+                }
+            }
+
+            sendMessage(message = message)
         }
     }
 
