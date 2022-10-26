@@ -27,7 +27,7 @@ import java.time.*
 import java.util.zip.*
 
 object DebugHelperPlugin : KotlinPlugin(
-    JvmPluginDescription(id = "io.github.gnuf0rce.debug-helper", version = "1.3.4") {
+    JvmPluginDescription(id = "io.github.gnuf0rce.debug-helper", version = "1.3.5") {
         name("debug-helper")
         author("cssxsh")
     }

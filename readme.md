@@ -47,6 +47,24 @@
 * auto_download_message 自动保存特殊消息内容，比如闪照
 * random_image_api 随机图片API by <https://rainchan.win/projects/pximg>
 
+### 修改协议内容
+
+在 `data/io.github.gnuf0rce.debug-helper/` 下新建文本文件 `ANDROID_PHONE.txt` (可根据需要修改的协议名更改文件名)  
+
+填入例如
+```text
+com.tencent.mobileqq
+537066978
+0.9.15.9425
+6.0.0.2463
+150470524
+66560
+16724722
+A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D
+1640921786
+16
+```
+
 ## 安装
 
 ### MCL 指令安装
