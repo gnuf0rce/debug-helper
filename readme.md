@@ -51,7 +51,7 @@
 
 在 `data/io.github.gnuf0rce.debug-helper/` 下新建文本文件 `ANDROID_PHONE.txt` (可根据需要修改的协议名更改文件名)  
 
-填入例如
+填入例如 (注意这是 ANDROID_PHONE 的协议内容，如果需要其他协议，请自行解决)
 ```text
 com.tencent.mobileqq
 537066978
