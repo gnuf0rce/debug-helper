@@ -19,7 +19,6 @@ import net.mamoe.mirai.console.extension.*
 import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.event.*
-import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.utils.*
 import java.io.*
 import java.nio.file.*
@@ -63,32 +62,8 @@ object DebugHelperPlugin : KotlinPlugin(
         return backup
     }
 
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    fun protocol() {
-        for (protocol in BotConfiguration.MiraiProtocol.values()) {
-            val file = resolveDataFile("${protocol.name}.txt")
-            if (file.exists().not()) continue
-            logger.warning { "将尝试修改 Mirai 内部协议信息 ${protocol.name} by ${file.path}" }
-            val lines = file.readLines()
-            val iterator = lines.iterator()
-            MiraiProtocolInternal.protocols[protocol] = MiraiProtocolInternal(
-                apkId = iterator.next(),
-                id = iterator.next().toLong(),
-                ver = iterator.next(),
-                sdkVer = iterator.next(),
-                miscBitMap = iterator.next().toInt(),
-                subSigMap = iterator.next().toInt(),
-                mainSigMap = iterator.next().toInt(),
-                sign = iterator.next(),
-                buildTime = iterator.next().toLong(),
-                ssoVersion = iterator.next().toInt(),
-             )
-        }
-    }
-
     override fun PluginComponentStorage.onLoad() {
         backup()
-        protocol()
     }
 
     override fun onEnable() {
