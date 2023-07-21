@@ -184,17 +184,12 @@ object DebugCommands {
         }
     }
 
-    object DependencyCommand : SimpleCommand(owner, primaryName = "dependency", description = "reload plugin") {
+    object DependencyCommand : SimpleCommand(owner, primaryName = "dependency", description = "plugins dependency") {
         @OptIn(ConsoleFrontEndImplementation::class)
         @Handler
         suspend fun CommandSender.handle() {
             if (isConsole()) throw CommandArgumentParserException("isConsole")
             val message = buildMessageChain {
-                appendLine("=== shared libraries ===")
-                val loader = MiraiConsoleImplementation.getInstance().jvmPluginLoader as BuiltInJvmPluginLoaderImpl
-                for (dep in loader.jvmPluginLoadingCtx.sharedLibrariesDependencies) {
-                    appendLine(dep)
-                }
                 for (plugin in MiraiConsole.pluginManager.plugins) {
                     if (plugin !is JvmPlugin) continue
                     appendLine("=== ${plugin.id} ${plugin.version} ===")
