@@ -171,46 +171,6 @@ object DebugCommands {
         }
     }
 
-    object DeviceInfoCommand : SimpleCommand(owner, primaryName = "device", description = "设备信息") {
-        @Handler
-        suspend fun UserCommandSender.handle() {
-            try {
-                val forward = buildForwardMessage(subject) {
-                    var count = 0
-                    val json = Json {
-                        ignoreUnknownKeys = true
-                        isLenient = true
-                        prettyPrint = true
-                    }
-                    for (bot in Bot.instances) {
-                        try {
-                            val device = DeviceInfoManager.serialize(info = bot.configuration.deviceInfo!!(bot), json)
-                            bot says device
-                            count++
-                        } catch (cause: Exception) {
-                            logger.warning({ "出现错误" }, cause)
-                            bot says (cause.message ?: cause.toString())
-                        }
-                    }
-
-                    displayStrategy = object : ForwardMessage.DisplayStrategy {
-                        override fun generateTitle(forward: RawForwardMessage): String {
-                            return "机器人设备信息"
-                        }
-
-                        override fun generateSummary(forward: RawForwardMessage): String {
-                            return "共${bot}条设备信息"
-                        }
-                    }
-                }
-                sendMessage(forward + IgnoreLengthCheck)
-            } catch (cause: Exception) {
-                logger.warning({ "出现错误" }, cause)
-                sendMessage("出现错误")
-            }
-        }
-    }
-
     object BackupCommand : SimpleCommand(owner, primaryName = "backup-data", description = "备份数据") {
         @Handler
         suspend fun CommandSender.handle() {
