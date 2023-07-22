@@ -3,7 +3,7 @@
 > 基于 [Mirai Console](https://github.com/mamoe/mirai-console) 的 调试小工具 插件
 
 [![Release](https://img.shields.io/github/v/release/gnuf0rce/debug-helper)](https://github.com/gnuf0rce/debug-helper/releases)
-![Downloads](https://img.shields.io/github/downloads/gnuf0rce/debug-helper/total)
+[![Downloads](https://img.shields.io/github/downloads/gnuf0rce/debug-helper/total)](https://repo1.maven.org/maven2/io/github/gnuf0rce/debug-helper/)
 [![MiraiForum](https://img.shields.io/badge/post-on%20MiraiForum-yellow)](https://mirai.mamoe.net/topic/452)
 
 **使用前应该查阅的相关文档或项目**
@@ -37,42 +37,22 @@
 | `/<forward> [contact] [title]?`    | 转发消息，句号结束          |
 | `/<fork> [contact] {codes}`        | 从mirai-code构造消息    |
 | `/<rich> [content]`                | 构造卡片消息             |
-| `/<device>`                        | 查看 Bot 设备信息        |
 | `/<backup-data>`                   | 备份数据               |
 | `/<reload> [id]`                   | 热重载插件              |
 | `/<system-property> [key] [value]` | 设置 system-property |
 
 ### DebugSetting
 
-* auto_download_message 自动保存特殊消息内容，比如闪照
-* random_image_api 随机图片API by <https://rainchan.win/projects/pximg>
-
-### 修改协议内容
-
-**这是 1.3.5 新增的功能**  
-在 `data/io.github.gnuf0rce.debug-helper/` 下新建文本文件 `ANDROID_PHONE.txt` (可根据需要修改的协议名更改文件名)  
-
-填入例如 (注意这是 ANDROID_PHONE 的协议内容，如果需要其他协议，请自行解决)
-```text
-com.tencent.mobileqq
-537138832
-8.9.15.9425
-6.0.0.2494
-150470524
-66560
-16724722
-A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D
-1640921786
-16
-```
+*   auto_download_message 自动保存特殊消息内容，比如闪照
+*   random_image_api 随机图片API by <https://rainchan.win/projects/pximg>
 
 ## 安装
 
 ### MCL 指令安装
 
-`./mcl --update-package io.github.gnuf0rce:debug-helper --channel stable --type plugin`
+`./mcl --update-package io.github.gnuf0rce:debug-helper --channel maven-stable --type plugin`
 
 ### 手动安装
 
-* 运行 [Mirai Console](https://github.com/mamoe/mirai-console) 生成`plugins`文件夹
-* 从 [Releases](https://github.com/gnuf0rce/debug-helper/releases) 下载`jar`并将其放入`plugins`文件夹中
+1.  从 [Releases](https://github.com/gnuf0rce/debug-helper/releases) 或者 [Maven](https://repo1.maven.org/maven2/io/github/gnuf0rce/debug-helper/) 下载 `mirai2.jar`
+2.  将其放入 `plugins` 文件夹中

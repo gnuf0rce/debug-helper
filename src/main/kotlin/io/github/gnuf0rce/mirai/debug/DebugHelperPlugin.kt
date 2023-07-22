@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 dsstudio Technologies and contributors.
+ * Copyright 2021-2023 dsstudio Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -26,7 +26,7 @@ import java.time.*
 import java.util.zip.*
 
 object DebugHelperPlugin : KotlinPlugin(
-    JvmPluginDescription(id = "io.github.gnuf0rce.debug-helper", version = "1.3.5") {
+    JvmPluginDescription(id = "io.github.gnuf0rce.debug-helper", version = "1.4.0") {
         name("debug-helper")
         author("cssxsh")
     }
