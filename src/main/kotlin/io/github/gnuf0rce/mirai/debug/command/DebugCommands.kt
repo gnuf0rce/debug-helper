@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 dsstudio Technologies and contributors.
+ * Copyright 2021-2023 dsstudio Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -41,7 +41,7 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.io.*
 import java.net.*
 
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
+@Suppress("unused")
 object DebugCommands {
 
     private val all: List<Command> by lazy { this::class.nestedClasses.mapNotNull { it.objectInstance as? Command } }
@@ -56,6 +56,7 @@ object DebugCommands {
         @Handler
         suspend fun CommandSender.handle(text: String, group: Group = subject as Group) {
             try {
+                @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
                 val message = AtAll + text + ForceAsLongMessage
                 group.sendMessage(message)
             } catch (cause: Exception) {
@@ -187,6 +188,7 @@ object DebugCommands {
     object DependencyCommand : SimpleCommand(owner, primaryName = "dependency", description = "plugins dependency") {
         @OptIn(ConsoleFrontEndImplementation::class)
         @Handler
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
         suspend fun CommandSender.handle() {
             if (isConsole()) throw CommandArgumentParserException("isConsole")
             val message = buildMessageChain {
@@ -215,75 +217,78 @@ object DebugCommands {
         }
     }
 
-//    object ReLoadCommand : SimpleCommand(owner, primaryName = "reload", description = "reload plugin") {
-//        @OptIn(ConsoleFrontEndImplementation::class)
-//        @Suppress("UNCHECKED_CAST")
-//        @Handler
-//        suspend fun CommandSender.handle(id: String) {
-//            val plugins = (MiraiConsole.pluginManager as PluginManagerImpl).resolvedPlugins
-//            val loader = MiraiConsoleImplementation.getInstance().jvmPluginLoader as BuiltInJvmPluginLoaderImpl
-//
-//            val plugin = plugins.filterIsInstance<AbstractJvmPlugin>()
-//                .find { it.id == id || it.name == id }
-//                ?: kotlin.run {
-//                    sendMessage("jvm plugin $id not found.")
-//                    return
-//                }
-//            val classLoader = plugin.javaClass.classLoader as JvmPluginClassLoaderN
-//            val jar = classLoader.file
-//            val cache = loader::class.java.getDeclaredField("pluginFileToInstanceMap")
-//                .apply { isAccessible = true }
-//                .get(loader) as MutableMap<File, JvmPlugin>
-//
-//            PluginManager.disablePlugin(plugin = plugin)
-//            try {
-//                plugin.cancel()
-//            } catch (cause: Exception) {
-//                logger.error({ "jvm plugin $id cancel throw exception." }, cause)
-//            }
-//            plugins.remove(plugin)
-//            try {
-//                val permissions = PermissionService.INSTANCE.javaClass.getDeclaredField("permissions")
-//                    .apply { isAccessible = true }
-//                    .get(PermissionService.INSTANCE) as MutableMap<*, *>
-//                permissions.remove(plugin.parentPermission.id)
-//                permissions.remove(plugin.parentPermission.id.run { "$namespace.$name" })
-//            } catch (cause: Exception) {
-//                logger.error({ "jvm plugin $id permission remove exception." }, cause)
-//            }
-//            try {
-//                runInterruptible(Dispatchers.IO) {
-//                    classLoader.close()
-//                }
-//            } catch (cause: Exception) {
-//                logger.error({ "jvm plugin $id class loader close exception." }, cause)
-//            }
-//            cache.remove(jar)
-//            loader.classLoaders.remove(classLoader)
-//
-//            val name = jar.name.substringBefore('-')
-//            val newJar = jar.parentFile
-//                .listFiles { _, filename -> filename.startsWith(name) }
-//                .maxBy { it.lastModified() }
-//            val newClassLoader = JvmPluginClassLoaderN.newLoader(newJar, loader.jvmPluginLoadingCtx)
-//            loader.classLoaders.add(newClassLoader)
-//            // exportManagers
-//            val newPlugin = with(PluginServiceHelper) {
-//                val single = newClassLoader.findServices(JvmPlugin::class, KotlinPlugin::class, JavaPlugin::class)
-//                    .loadAllServices().single()
-//
-//                newClassLoader.linkedLogger = single.logger
-//                cache[jar] = single
-//                single
-//            }
-//            plugins.add(newPlugin)
-//            PluginManager.loadPlugin(plugin = newPlugin)
-//            PluginManager.enablePlugin(plugin = newPlugin)
-//
-//
-//            sendMessage("jvm plugin $id reloaded.")
-//        }
-//    }
+    object ReLoadCommand : SimpleCommand(owner, primaryName = "reload", description = "reload plugin") {
+        @OptIn(ConsoleFrontEndImplementation::class)
+        @Handler
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "UNCHECKED_CAST")
+        suspend fun CommandSender.handle(id: String) {
+            val plugins = (MiraiConsole.pluginManager as PluginManagerImpl).resolvedPlugins
+            val loader = MiraiConsoleImplementation.getInstance().jvmPluginLoader as BuiltInJvmPluginLoaderImpl
+
+            val plugin = plugins.filterIsInstance<AbstractJvmPlugin>()
+                .find { it.id == id || it.name == id }
+                ?: kotlin.run {
+                    sendMessage("jvm plugin $id not found.")
+                    return
+                }
+            val classLoader = plugin.javaClass.classLoader as JvmPluginClassLoaderN
+            val jar = classLoader.file
+            val cache = loader::class.java.getDeclaredField("pluginFileToInstanceMap")
+                .apply { isAccessible = true }
+                .get(loader) as MutableMap<File, JvmPlugin>
+
+            PluginManager.disablePlugin(plugin = plugin)
+            try {
+                plugin.cancel()
+            } catch (cause: Exception) {
+                logger.error({ "jvm plugin $id cancel throw exception." }, cause)
+            }
+            plugins.remove(plugin)
+            try {
+                val permissions = PermissionService.INSTANCE.javaClass.getDeclaredField("permissions")
+                    .apply { isAccessible = true }
+                    .get(PermissionService.INSTANCE) as MutableMap<*, *>
+                permissions.remove(plugin.parentPermission.id)
+                permissions.remove(plugin.parentPermission.id.run { "$namespace.$name" })
+            } catch (cause: Exception) {
+                logger.error({ "jvm plugin $id permission remove exception." }, cause)
+            }
+            try {
+                runInterruptible(Dispatchers.IO) {
+                    classLoader.close()
+                }
+            } catch (cause: Exception) {
+                logger.error({ "jvm plugin $id class loader close exception." }, cause)
+            }
+            cache.remove(jar)
+            loader.classLoaders.remove(classLoader)
+
+            val name = jar.name.substringBefore('-')
+            val newJar = jar.parentFile
+                .listFiles { _, filename -> filename.startsWith(name) }
+                .maxBy { it.lastModified() }
+            val ctx = loader::class.java.getDeclaredField("jvmPluginLoadingCtx")
+                .apply { isAccessible = true }
+                .get(loader) as JvmPluginsLoadingCtx
+            val newClassLoader = JvmPluginClassLoaderN.newLoader(newJar, ctx)
+            loader.classLoaders.add(newClassLoader)
+            // exportManagers
+            val newPlugin = with(PluginServiceHelper) {
+                val single = newClassLoader.findServices(JvmPlugin::class, KotlinPlugin::class, JavaPlugin::class)
+                    .loadAllServices().single()
+
+                newClassLoader.linkedLogger = single.logger
+                cache[jar] = single
+                single
+            }
+            plugins.add(newPlugin)
+            PluginManager.loadPlugin(plugin = newPlugin)
+            PluginManager.enablePlugin(plugin = newPlugin)
+
+
+            sendMessage("jvm plugin $id reloaded.")
+        }
+    }
 
     object PropertyCommand : SimpleCommand(owner, primaryName = "system-property", description = "System.setProperty") {
         @Handler
@@ -300,6 +305,7 @@ object DebugCommands {
 
     object CookieCommand : SimpleCommand(owner, primaryName = "cookie", description = "Bot Cookie") {
         @Handler
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
         suspend fun CommandSender.handle() {
             sendMessage(buildMessageChain {
                 for (bot in Bot.instances) {
